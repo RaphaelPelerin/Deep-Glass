@@ -229,12 +229,12 @@ a {
 
 /* a loupe to drag around: no tint, a narrow rim, a magnified middle */
 .lens {
-  --vitre-bezel: 26;
-  --vitre-blur: 0;
-  --vitre-magnify: 1.14;
-  --vitre-dispersion: 0.35;
-  --vitre-tint: rgb(255 255 255 / 0.015);
-  --vitre-shadow: 0 30px 60px -24px rgb(0 0 0 / 0.5);
+  --dg-bezel: 26;
+  --dg-blur: 0;
+  --dg-magnify: 1.14;
+  --dg-dispersion: 0.35;
+  --dg-tint: rgb(255 255 255 / 0.015);
+  --dg-shadow: 0 30px 60px -24px rgb(0 0 0 / 0.5);
   position: absolute;
   top: calc(50% - 175px);
   left: calc(50% - 150px);
@@ -374,14 +374,14 @@ a {
   width: 100%;
 }
 
-.vitre-tile.row {
+.dg-tile.row {
   flex-direction: row;
   gap: 10px;
   min-height: 76px;
   font-weight: 600;
 }
 
-.vitre-tile.row svg {
+.dg-tile.row svg {
   width: 22px;
   height: 22px;
 }
@@ -438,11 +438,11 @@ a {
   opacity: 0.85;
 }
 
-.slider-row .vitre-slider {
+.slider-row .dg-slider {
   flex: 1;
 }
 
-.vitre-field {
+.dg-field {
   max-width: 340px;
 }
 
@@ -465,9 +465,9 @@ a {
 }
 
 .showcase {
-  --vitre-bezel: 48;
-  --vitre-blur: 0;
-  --vitre-tint: rgb(255 255 255 / 0.03);
+  --dg-bezel: 48;
+  --dg-blur: 0;
+  --dg-tint: rgb(255 255 255 / 0.03);
   display: flex;
   flex-direction: column;
   height: 420px;
@@ -506,7 +506,7 @@ a {
   display: grid;
   grid-template-columns: 1fr 1.5fr;
   gap: 24px;
-  --vitre-tint: rgb(10 12 24 / 0.3);
+  --dg-tint: rgb(10 12 24 / 0.3);
 }
 
 .code-card pre {
@@ -542,7 +542,7 @@ a {
   color: var(--fg-2);
 }
 
-dialog.vitre-sheet h3 {
+dialog.dg-sheet h3 {
   margin: 0;
   font-size: 22px;
   letter-spacing: -0.02em;
@@ -584,7 +584,7 @@ dialog.vitre-sheet h3 {
   .footer {
     flex-direction: column;
   }
-  .vitre-tabbar > [role='tab'] {
+  .dg-tabbar > [role='tab'] {
     min-width: 64px;
   }
 }

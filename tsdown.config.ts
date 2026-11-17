@@ -10,11 +10,11 @@ export default defineConfig([
     dts: true,
     clean: false,
   },
-  // <script> tag build: global `Vitre`, glass applied to the page on load
+  // <script> tag build: global `DeepGlass`, glass applied to the page on load
   {
-    entry: { vitre: 'src/cdn.ts' },
+    entry: { 'deep-glass': 'src/cdn.ts' },
     format: 'iife',
-    globalName: 'Vitre',
+    globalName: 'DeepGlass',
     platform: 'browser',
     target: 'es2022',
     minify: true,

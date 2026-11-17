@@ -39,7 +39,7 @@ function make<K extends keyof SVGElementTagNameMap>(
 /** the <svg> that holds every filter: in the page (filters can't be referenced from elsewhere) */
 function mount(): SVGSVGElement {
   if (host?.isConnected) return host;
-  host = make('svg', { 'aria-hidden': 'true', focusable: 'false', 'data-vitre': '' });
+  host = make('svg', { 'aria-hidden': 'true', focusable: 'false', 'data-deep-glass': '' });
   host.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none';
   for (const f of filters.values()) host.append(f.node);
   document.body.append(host);
@@ -125,7 +125,7 @@ export function acquire(shape: LensShape, optics: Optics): { key: string; id: st
   const key = JSON.stringify([lens, o]);
   let f = filters.get(key);
   if (!f) {
-    const id = `vitre-${++next}`;
+    const id = `dg-${++next}`;
     f = { id, node: build(id, lens, o), uses: 0 };
     filters.set(key, f);
     mount().append(f.node);

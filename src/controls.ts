@@ -48,7 +48,7 @@ class Spring {
  * it stretches with its speed, and lifts into a magnifying lens while it is dragged.
  */
 export class Droplet {
-  readonly el = span('vitre vitre-droplet');
+  readonly el = span('dg dg-droplet');
   private readonly px = new Spring(0);
   private readonly py = new Spring(0);
   private readonly pw = new Spring(0);
@@ -199,7 +199,7 @@ function choiceGroup(role: 'radio' | 'tab') {
       }
       place();
       root.dispatchEvent(
-        new CustomEvent('vitre:change', {
+        new CustomEvent('dg:change', {
           bubbles: true,
           detail: { index: items().indexOf(item), value: item.dataset.value ?? item.textContent?.trim() ?? '' },
         }),
@@ -342,20 +342,20 @@ function hoverGroup(itemSelector: string) {
 }
 
 /**
- * <label class="vitre-switch"><input type="checkbox"> Label</label>: the thumb turns into a glass
+ * <label class="dg-switch"><input type="checkbox"> Label</label>: the thumb turns into a glass
  * lens while it is held, and can be dragged across.
  */
 function toggleSwitch(label: HTMLElement) {
   const input = label.querySelector<HTMLInputElement>('input[type="checkbox"]');
   if (!input) return;
   input.setAttribute('role', 'switch');
-  let track = label.querySelector<HTMLElement>('.vitre-switch__track');
+  let track = label.querySelector<HTMLElement>('.dg-switch__track');
   if (!track) {
-    track = span('vitre-switch__track');
-    track.append(span('vitre vitre-switch__thumb'));
+    track = span('dg-switch__track');
+    track.append(span('dg dg-switch__thumb'));
     input.after(track);
   }
-  const thumb = track.querySelector<HTMLElement>('.vitre-switch__thumb')!;
+  const thumb = track.querySelector<HTMLElement>('.dg-switch__thumb')!;
   let drag: { id: number; x: number; from: number; pos: number; moved: boolean } | null = null;
   let swallow = false;
 
@@ -377,14 +377,14 @@ function toggleSwitch(label: HTMLElement) {
     label.toggleAttribute('data-dragging', true);
     const travel = Math.max(1, track.clientWidth - thumb.offsetWidth);
     drag.pos = Math.max(0, Math.min(1, drag.from + dx / travel));
-    thumb.style.setProperty('--vitre-pos', drag.pos.toFixed(3));
+    thumb.style.setProperty('--dg-pos', drag.pos.toFixed(3));
   };
   const onUp = (e: PointerEvent) => {
     if (!drag || e.pointerId !== drag.id) return;
     const { moved, pos } = drag;
     drag = null;
     label.removeAttribute('data-dragging');
-    thumb.style.removeProperty('--vitre-pos');
+    thumb.style.removeProperty('--dg-pos');
     lift(false);
     if (!moved) return;
     // dragged: the position decides, and the click that follows must not toggle it back
@@ -416,22 +416,22 @@ function toggleSwitch(label: HTMLElement) {
 }
 
 /**
- * <div class="vitre-slider"><input type="range"></div>: the native input does the work (pointer,
+ * <div class="dg-slider"><input type="range"></div>: the native input does the work (pointer,
  * keyboard, forms); the thumb swells into a lens over the track while it is dragged.
  */
 function slider(root: HTMLElement) {
   const input = root.querySelector<HTMLInputElement>('input[type="range"]');
   if (!input) return;
-  if (!root.querySelector('.vitre-slider__track')) {
-    const track = span('vitre-slider__track');
-    track.append(span('vitre-slider__fill'));
-    input.before(track, span('vitre vitre-slider__thumb'));
+  if (!root.querySelector('.dg-slider__track')) {
+    const track = span('dg-slider__track');
+    track.append(span('dg-slider__fill'));
+    input.before(track, span('dg dg-slider__thumb'));
   }
-  const thumb = root.querySelector<HTMLElement>('.vitre-slider__thumb')!;
+  const thumb = root.querySelector<HTMLElement>('.dg-slider__thumb')!;
   const sync = () => {
     const min = input.min === '' ? 0 : +input.min;
     const max = input.max === '' ? 100 : +input.max;
-    root.style.setProperty('--vitre-value', String(Math.max(0, Math.min(1, (+input.value - min) / (max - min || 1)))));
+    root.style.setProperty('--dg-value', String(Math.max(0, Math.min(1, (+input.value - min) / (max - min || 1)))));
   };
   const lift = (on: boolean) => {
     root.toggleAttribute('data-lifted', on);
@@ -461,14 +461,14 @@ function slider(root: HTMLElement) {
 
 let installed = false;
 
-/** registers the components with the runtime (called by vitre(): no reliance on import side effects) */
+/** registers the components with the runtime (called by deepGlass(): no reliance on import side effects) */
 export function installControls(): void {
   if (installed) return;
   installed = true;
-  defineControl('.vitre-segmented', choiceGroup('radio'));
-  defineControl('.vitre-tabbar', choiceGroup('tab'));
-  defineControl('.vitre-toolbar', hoverGroup('button, a, [role="button"]'));
-  defineControl('.vitre-menu', hoverGroup('[role^="menuitem"], button, a'));
-  defineControl('.vitre-switch', toggleSwitch);
-  defineControl('.vitre-slider', slider);
+  defineControl('.dg-segmented', choiceGroup('radio'));
+  defineControl('.dg-tabbar', choiceGroup('tab'));
+  defineControl('.dg-toolbar', hoverGroup('button, a, [role="button"]'));
+  defineControl('.dg-menu', hoverGroup('[role^="menuitem"], button, a'));
+  defineControl('.dg-switch', toggleSwitch);
+  defineControl('.dg-slider', slider);
 }

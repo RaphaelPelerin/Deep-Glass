@@ -9,8 +9,8 @@ export default defineConfig({
   root: 'demo',
   resolve: {
     alias: [
-      { find: /^vitre$/, replacement: fileURLToPath(new URL('./src/index.ts', import.meta.url)) },
-      { find: /^vitre\/style\.css$/, replacement: fileURLToPath(new URL('./src/vitre.css', import.meta.url)) },
+      { find: /^deep-glass$/, replacement: fileURLToPath(new URL('./src/index.ts', import.meta.url)) },
+      { find: /^deep-glass\/style\.css$/, replacement: fileURLToPath(new URL('./src/deep-glass.css', import.meta.url)) },
     ],
   },
   define: {

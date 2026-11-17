@@ -2,11 +2,11 @@ import { acquire, release } from './filters';
 import { canRefract, prefersReducedMotion } from './support';
 
 /** the glass material: these refract (or frost) what is behind them */
-export const GLASS = '.vitre';
+export const GLASS = '.dg';
 /** lit by the pointer too, without glass of their own (tiles inside a card) */
-const LIT = '.vitre, .vitre-tile';
+const LIT = '.dg, .dg-tile';
 /** squish, stretch towards the finger and spring back */
-const PRESSABLE = '.vitre-button, .vitre-icon, .vitre-chip, [data-vitre-press]';
+const PRESSABLE = '.dg-button, .dg-icon, .dg-chip, [data-dg-press]';
 
 interface Pane {
   el: HTMLElement;
@@ -56,36 +56,36 @@ function updatePane(pane: Pane) {
   const { el, w, h } = pane;
   if (!el.isConnected) return;
   const cs = getComputedStyle(el);
-  const strength = num(cs, '--vitre-refraction', 1);
+  const strength = num(cs, '--dg-refraction', 1);
   let next: { key: string; id: string } | null = null;
   if (refract && strength > 0 && w >= 2 && h >= 2) {
-    const bezel = num(cs, '--vitre-bezel', 24);
+    const bezel = num(cs, '--dg-bezel', 24);
     next = acquire(
       {
         width: w,
         height: h,
         radius: radiusOf(cs.borderTopLeftRadius, w, h),
         bezel,
-        thickness: num(cs, '--vitre-thickness', bezel * 0.5) * strength,
-        ior: num(cs, '--vitre-ior', 1.5),
-        magnify: num(cs, '--vitre-magnify', 1),
+        thickness: num(cs, '--dg-thickness', bezel * 0.5) * strength,
+        ior: num(cs, '--dg-ior', 1.5),
+        magnify: num(cs, '--dg-magnify', 1),
       },
       {
-        blur: num(cs, '--vitre-blur', 1.5) + num(cs, '--vitre-frost', 0),
-        dispersion: num(cs, '--vitre-dispersion', 0.5),
-        saturation: num(cs, '--vitre-saturation', 1.7),
-        brightness: num(cs, '--vitre-brightness', 1.05),
+        blur: num(cs, '--dg-blur', 1.5) + num(cs, '--dg-frost', 0),
+        dispersion: num(cs, '--dg-dispersion', 0.5),
+        saturation: num(cs, '--dg-saturation', 1.7),
+        brightness: num(cs, '--dg-brightness', 1.05),
       },
     );
   }
   if (pane.key) release(pane.key);
   pane.key = next?.key ?? null;
   if (next) {
-    el.style.setProperty('--vitre-filter', `url(#${next.id})`);
-    el.dataset.vitreRefracts = '';
+    el.style.setProperty('--dg-filter', `url(#${next.id})`);
+    el.dataset.dgRefracts = '';
   } else {
-    el.style.removeProperty('--vitre-filter');
-    delete el.dataset.vitreRefracts;
+    el.style.removeProperty('--dg-filter');
+    delete el.dataset.dgRefracts;
   }
 }
 
@@ -100,7 +100,7 @@ function queue(pane: Pane) {
   frame ||= requestAnimationFrame(flush);
 }
 
-/** re-reads a pane's settings now (after a state that changes `--vitre-*` values) */
+/** re-reads a pane's settings now (after a state that changes `--dg-*` values) */
 export function refresh(el: HTMLElement): void {
   const pane = panes.get(el);
   if (pane) updatePane(pane);
@@ -144,8 +144,8 @@ function lightUp() {
         Math.max(r.top - pointer.y, 0, pointer.y - r.bottom),
       );
       near = Math.max(0, 1 - gap / Math.max(120, Math.min(r.width, r.height)));
-      el.style.setProperty('--vitre-mx', `${(pointer.x - r.left).toFixed(1)}px`);
-      el.style.setProperty('--vitre-my', `${(pointer.y - r.top).toFixed(1)}px`);
+      el.style.setProperty('--dg-mx', `${(pointer.x - r.left).toFixed(1)}px`);
+      el.style.setProperty('--dg-my', `${(pointer.y - r.top).toFixed(1)}px`);
     } else if (tilt) {
       lx = tilt.x;
       ly = tilt.y;
@@ -153,11 +153,11 @@ function lightUp() {
     const l = Math.hypot(lx, ly) || 1;
     lx /= l;
     ly /= l;
-    el.style.setProperty('--vitre-lx', lx.toFixed(3));
-    el.style.setProperty('--vitre-ly', ly.toFixed(3));
+    el.style.setProperty('--dg-lx', lx.toFixed(3));
+    el.style.setProperty('--dg-ly', ly.toFixed(3));
     // a gradient pointing away from the light starts bright on the lit side
-    el.style.setProperty('--vitre-angle', `${((Math.atan2(-lx, ly) * 180) / Math.PI).toFixed(1)}deg`);
-    el.style.setProperty('--vitre-near', near.toFixed(3));
+    el.style.setProperty('--dg-angle', `${((Math.atan2(-lx, ly) * 180) / Math.PI).toFixed(1)}deg`);
+    el.style.setProperty('--dg-near', near.toFixed(3));
   }
 }
 
@@ -172,7 +172,7 @@ const onPointerMove = (e: PointerEvent) => {
 };
 const onPointerLeave = () => {
   pointer = null;
-  for (const el of onScreen) el.style.setProperty('--vitre-near', '0');
+  for (const el of onScreen) el.style.setProperty('--dg-near', '0');
 };
 // phones: tilting the device moves the light (where the browser allows it without asking)
 const onTilt = (e: DeviceOrientationEvent) => {
@@ -202,8 +202,8 @@ function onPointerDown(e: PointerEvent) {
   const r = el.getBoundingClientRect();
   pressed = { el, id: e.pointerId, cx: r.left + r.width / 2, cy: r.top + r.height / 2, w: r.width, h: r.height };
   el.dataset.pressed = '';
-  el.style.setProperty('--vitre-mx', `${(e.clientX - r.left).toFixed(1)}px`);
-  el.style.setProperty('--vitre-my', `${(e.clientY - r.top).toFixed(1)}px`);
+  el.style.setProperty('--dg-mx', `${(e.clientX - r.left).toFixed(1)}px`);
+  el.style.setProperty('--dg-my', `${(e.clientY - r.top).toFixed(1)}px`);
   addEventListener('pointermove', onPressMove, { passive: true });
   addEventListener('pointerup', onPressEnd);
   addEventListener('pointercancel', onPressEnd);
@@ -214,23 +214,23 @@ function onPressMove(e: PointerEvent) {
   const { el, cx, cy, w, h } = pressed;
   const px = rubber(e.clientX - cx, w);
   const py = rubber(e.clientY - cy, h);
-  el.style.setProperty('--vitre-pull-x', `${px.toFixed(2)}px`);
-  el.style.setProperty('--vitre-pull-y', `${py.toFixed(2)}px`);
+  el.style.setProperty('--dg-pull-x', `${px.toFixed(2)}px`);
+  el.style.setProperty('--dg-pull-y', `${py.toFixed(2)}px`);
   // stretched along the pull, thinner across it
   const sx = 1 + (Math.abs(px) / w) * 1.2 - (Math.abs(py) / h) * 0.5;
   const sy = 1 + (Math.abs(py) / h) * 1.2 - (Math.abs(px) / w) * 0.5;
-  el.style.setProperty('--vitre-sx', sx.toFixed(4));
-  el.style.setProperty('--vitre-sy', sy.toFixed(4));
+  el.style.setProperty('--dg-sx', sx.toFixed(4));
+  el.style.setProperty('--dg-sy', sy.toFixed(4));
   const r = el.getBoundingClientRect();
-  el.style.setProperty('--vitre-mx', `${(e.clientX - r.left).toFixed(1)}px`);
-  el.style.setProperty('--vitre-my', `${(e.clientY - r.top).toFixed(1)}px`);
+  el.style.setProperty('--dg-mx', `${(e.clientX - r.left).toFixed(1)}px`);
+  el.style.setProperty('--dg-my', `${(e.clientY - r.top).toFixed(1)}px`);
 }
 
 function onPressEnd(e: PointerEvent) {
   if (!pressed || e.pointerId !== pressed.id) return;
   const { el } = pressed;
   delete el.dataset.pressed;
-  for (const p of ['--vitre-pull-x', '--vitre-pull-y', '--vitre-sx', '--vitre-sy']) el.style.removeProperty(p);
+  for (const p of ['--dg-pull-x', '--dg-pull-y', '--dg-sx', '--dg-sy']) el.style.removeProperty(p);
   pressed = null;
   removeEventListener('pointermove', onPressMove);
   removeEventListener('pointerup', onPressEnd);
@@ -303,7 +303,7 @@ export function defineControl(selector: string, setup: Setup): void {
 export function start(root: ParentNode, opts: RuntimeOptions): void {
   options = opts;
   refract = opts.refraction && canRefract();
-  document.documentElement.toggleAttribute('data-vitre-refraction', refract);
+  document.documentElement.toggleAttribute('data-dg-refraction', refract);
   if (!started) {
     started = true;
     addEventListener('pointermove', onPointerMove, { passive: true });
@@ -334,9 +334,9 @@ export function stop(): void {
   mutations.disconnect();
   roots.clear();
   for (const el of [...panes.keys(), ...lit, ...cleanups.keys()]) detach(el);
-  for (const el of document.querySelectorAll<HTMLElement>('[data-vitre-refracts]')) {
-    el.style.removeProperty('--vitre-filter');
-    delete el.dataset.vitreRefracts;
+  for (const el of document.querySelectorAll<HTMLElement>('[data-dg-refracts]')) {
+    el.style.removeProperty('--dg-filter');
+    delete el.dataset.dgRefracts;
   }
   removeEventListener('pointermove', onPointerMove);
   document.documentElement.removeEventListener('pointerleave', onPointerLeave);
@@ -344,7 +344,7 @@ export function stop(): void {
   removeEventListener('scroll', relight, { capture: true });
   removeEventListener('resize', relight);
   removeEventListener('deviceorientation', onTilt);
-  document.documentElement.removeAttribute('data-vitre-refraction');
+  document.documentElement.removeAttribute('data-dg-refraction');
   started = false;
 }
 

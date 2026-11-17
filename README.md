@@ -1,8 +1,8 @@
-# vitre
+# deep-glass
 
 **Liquid glass for the web.** UI components that refract what is behind them through a curved rim, split it into colors at the edges, catch the light where your pointer is, and stretch like a drop when you press them.
 
-[![npm](https://img.shields.io/npm/v/vitre?color=8ab4ff)](https://www.npmjs.com/package/vitre)
+[![npm](https://img.shields.io/npm/v/deep-glass?color=8ab4ff)](https://www.npmjs.com/package/deep-glass)
 [![gzip](https://img.shields.io/badge/gzip-7%20kB%20js%20%2B%204%20kB%20css-8ab4ff)](#size)
 [![license](https://img.shields.io/badge/license-MIT-8ab4ff)](LICENSE)
 
@@ -25,76 +25,76 @@ Not a blur. Each pane is a slab of glass: each pixel of its rim is traced throug
 ## Install
 
 ```sh
-npm i vitre
+npm i deep-glass
 ```
 
 ```js
-import { vitre } from 'vitre';
-import 'vitre/style.css';
+import { deepGlass } from 'deep-glass';
+import 'deep-glass/style.css';
 
-vitre();
+deepGlass();
 ```
 
 Or with a `<script>` tag, which starts on its own:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vitre/dist/vitre.css" />
-<script src="https://cdn.jsdelivr.net/npm/vitre/dist/vitre.iife.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/deep-glass/dist/deep-glass.css" />
+<script src="https://cdn.jsdelivr.net/npm/deep-glass/dist/deep-glass.iife.js"></script>
 ```
 
 ## Components
 
-`.vitre` is the material; `.vitre-*` classes shape it. Glass needs something to bend: put it over a photo, a gradient, text, a video, a canvas.
+`.dg` is the material; `.dg-*` classes shape it. Glass needs something to bend: put it over a photo, a gradient, text, a video, a canvas.
 
 ```html
 <!-- buttons -->
-<button class="vitre vitre-button">Save</button>
-<button class="vitre vitre-button vitre-button--tinted">Share</button>
-<button class="vitre vitre-button vitre-button--solid">Done</button>
-<button class="vitre vitre-icon" aria-label="Play">…svg…</button>
-<button class="vitre vitre-chip" aria-pressed="true">Photos</button>
+<button class="dg dg-button">Save</button>
+<button class="dg dg-button dg-button--tinted">Share</button>
+<button class="dg dg-button dg-button--solid">Done</button>
+<button class="dg dg-icon" aria-label="Play">…svg…</button>
+<button class="dg dg-chip" aria-pressed="true">Photos</button>
 
 <!-- a card, with etched tiles inside -->
-<article class="vitre vitre-card">
-  <div class="vitre-tile"><span class="vitre-stat">148</span><span class="vitre-label">Projects</span></div>
+<article class="dg dg-card">
+  <div class="dg-tile"><span class="dg-stat">148</span><span class="dg-label">Projects</span></div>
 </article>
 
 <!-- a text field -->
-<label class="vitre vitre-field">…svg… <input type="search" placeholder="Search" /></label>
+<label class="dg dg-field">…svg… <input type="search" placeholder="Search" /></label>
 
 <!-- a segmented control: click, arrow keys, or drag the drop -->
-<div class="vitre vitre-segmented" role="radiogroup" aria-label="Range">
+<div class="dg dg-segmented" role="radiogroup" aria-label="Range">
   <button role="radio" aria-checked="true">Day</button>
   <button role="radio" aria-checked="false">Week</button>
 </div>
 
 <!-- a tab bar -->
-<nav class="vitre vitre-tabbar" role="tablist">
+<nav class="dg dg-tabbar" role="tablist">
   <button role="tab" aria-selected="true">…svg… Home</button>
   <button role="tab" aria-selected="false">…svg… Search</button>
 </nav>
 
 <!-- a toolbar and a menu: a drop glides under the hovered item -->
-<div class="vitre vitre-toolbar" role="toolbar"><button aria-label="Edit">…</button><hr /><button aria-label="Delete">…</button></div>
-<div class="vitre vitre-menu" role="menu"><button role="menuitem">Copy</button><hr /><button role="menuitem">Delete</button></div>
+<div class="dg dg-toolbar" role="toolbar"><button aria-label="Edit">…</button><hr /><button aria-label="Delete">…</button></div>
+<div class="dg dg-menu" role="menu"><button role="menuitem">Copy</button><hr /><button role="menuitem">Delete</button></div>
 
 <!-- a switch and a slider: their thumbs turn into lenses while you hold them -->
-<label class="vitre-switch"><input type="checkbox" /> Wi-Fi</label>
-<div class="vitre-slider"><input type="range" aria-label="Volume" /></div>
+<label class="dg-switch"><input type="checkbox" /> Wi-Fi</label>
+<div class="dg-slider"><input type="range" aria-label="Volume" /></div>
 
 <!-- a sheet, on a native dialog -->
-<dialog class="vitre vitre-sheet">…</dialog>
+<dialog class="dg dg-sheet">…</dialog>
 ```
 
-Segmented controls and tab bars fire a `vitre:change` event (`detail: { index, value }`, `value` from `data-value` or the label). Switches and sliders are real inputs: forms, `change` events and the keyboard work as usual.
+Segmented controls and tab bars fire a `dg:change` event (`detail: { index, value }`, `value` from `data-value` or the label). Switches and sliders are real inputs: forms, `change` events and the keyboard work as usual.
 
 ```js
-import { toast } from 'vitre';
+import { toast } from 'deep-glass';
 
 toast('Saved'); // a glass pill drops in from the top
 ```
 
-Tints: `vitre--clear`, `vitre--frosted`, `vitre--dark`, `vitre--light`, `vitre--tinted`. Sizes: `vitre-button--sm`, `--lg`, `--block`.
+Tints: `dg--clear`, `dg--frosted`, `dg--dark`, `dg--light`, `dg--tinted`. Sizes: `dg-button--sm`, `--lg`, `--block`.
 
 ## Tuning the glass
 
@@ -102,35 +102,35 @@ Every setting is a CSS custom property: set it on `:root` for the page, on a sec
 
 | Property | Default | |
 | --- | --- | --- |
-| `--vitre-refraction` | `1` | How strongly the rim bends, `0` for flat glass |
-| `--vitre-bezel` | per component | Width of the rounded rim, px (unitless) |
-| `--vitre-thickness` | `bezel × 0.5` | How far bent rays land, px |
-| `--vitre-ior` | `1.5` | Index of refraction |
-| `--vitre-dispersion` | `0.5` | Color fringes, `0` to `1` |
-| `--vitre-blur` | per component | Frosting, px |
-| `--vitre-frost` | `0` | Extra frosting for every pane, px |
-| `--vitre-saturation` | `1.7` | |
-| `--vitre-brightness` | `1.05` | |
-| `--vitre-magnify` | `1` | Magnifies the whole pane: a loupe |
-| `--vitre-tint` | translucent white | The glass color |
-| `--vitre-accent` | `#0a84ff` | Tinted buttons, sliders, focus rings |
-| `--vitre-on` | `#34c759` | Switches when on |
-| `--vitre-shadow` | soft | The shadow under each pane |
-| `--vitre-spring` | a bouncy spring | Easing of touch (a CSS `linear()` curve) |
+| `--dg-refraction` | `1` | How strongly the rim bends, `0` for flat glass |
+| `--dg-bezel` | per component | Width of the rounded rim, px (unitless) |
+| `--dg-thickness` | `bezel × 0.5` | How far bent rays land, px |
+| `--dg-ior` | `1.5` | Index of refraction |
+| `--dg-dispersion` | `0.5` | Color fringes, `0` to `1` |
+| `--dg-blur` | per component | Frosting, px |
+| `--dg-frost` | `0` | Extra frosting for every pane, px |
+| `--dg-saturation` | `1.7` | |
+| `--dg-brightness` | `1.05` | |
+| `--dg-magnify` | `1` | Magnifies the whole pane: a loupe |
+| `--dg-tint` | translucent white | The glass color |
+| `--dg-accent` | `#0a84ff` | Tinted buttons, sliders, focus rings |
+| `--dg-on` | `#34c759` | Switches when on |
+| `--dg-shadow` | soft | The shadow under each pane |
+| `--dg-spring` | a bouncy spring | Easing of touch (a CSS `linear()` curve) |
 
 After changing them from JavaScript, call `refresh()`.
 
 ## API
 
 ```ts
-const glass = vitre({
+const glass = deepGlass({
   root: document,   // where to look for glass; elements added later are picked up
   refraction: true, // false: frosted glass everywhere
   light: true,      // highlights face the pointer
 });
 
 glass.refraction;   // whether this browser really refracts
-glass.refresh(el?); // re-read sizes and --vitre-* settings
+glass.refresh(el?); // re-read sizes and --dg-* settings
 glass.destroy();
 
 toast(message, { duration, icon }); // returns a function that dismisses it
@@ -149,7 +149,7 @@ lensMap(shape);                     // the displacement map itself, for your own
 
 Real refraction needs SVG filters in `backdrop-filter`, which only Chromium renders: Chrome, Edge, Opera, Brave, Arc, Samsung Internet. Safari and Firefox get frosted glass (blur and saturation) with the same rim, light, shadows and interactions. Without JavaScript, everything is styled and usable; the switches and sliders are native inputs.
 
-Glass inside glass doesn't refract the page (a browser rule for nested backdrop filters, and Apple's guidance too): that's what `vitre-tile` is for inside cards. The drops of segmented controls and tab bars do bend what is under them: the labels.
+Glass inside glass doesn't refract the page (a browser rule for nested backdrop filters, and Apple's guidance too): that's what `dg-tile` is for inside cards. The drops of segmented controls and tab bars do bend what is under them: the labels.
 
 ## Size
 

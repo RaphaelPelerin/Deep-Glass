@@ -1,5 +1,5 @@
 {
-  "name": "vitre",
+  "name": "deep-glass",
   "version": "0.1.0",
   "description": "Liquid glass for the web: UI components that refract, bend and light up what is behind them. Real lens refraction with color fringes, specular rims and springy touch.",
   "keywords": [
@@ -21,37 +21,37 @@
   ],
   "license": "MIT",
   "author": "Raphael Pellerin",
-  "homepage": "https://github.com/RaphaelPelerin/vitre#readme",
+  "homepage": "https://github.com/RaphaelPelerin/deep-glass#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RaphaelPelerin/vitre.git"
+    "url": "git+https://github.com/RaphaelPelerin/deep-glass.git"
   },
   "bugs": {
-    "url": "https://github.com/RaphaelPelerin/vitre/issues"
+    "url": "https://github.com/RaphaelPelerin/deep-glass/issues"
   },
   "type": "module",
   "sideEffects": [
     "*.css",
-    "./dist/vitre.iife.js"
+    "./dist/deep-glass.iife.js"
   ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./style.css": "./dist/vitre.css",
+    "./style.css": "./dist/deep-glass.css",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "unpkg": "./dist/vitre.iife.js",
-  "jsdelivr": "./dist/vitre.iife.js",
+  "unpkg": "./dist/deep-glass.iife.js",
+  "jsdelivr": "./dist/deep-glass.iife.js",
   "files": [
     "dist"
   ],
   "scripts": {
     "dev": "vite",
-    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsdown && esbuild src/vitre.css --minify --outfile=dist/vitre.css --log-level=warning",
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsdown && esbuild src/deep-glass.css --minify --outfile=dist/deep-glass.css --log-level=warning",
     "build:demo": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",

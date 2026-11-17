@@ -1,71 +1,71 @@
 /*
- * vitre: liquid glass for the web.
+ * deep-glass: liquid glass for the web.
  *
- * `.vitre` is the material. With the script, it refracts what is behind it (Chromium); without it,
+ * `.dg` is the material. With the script, it refracts what is behind it (Chromium); without it,
  * or elsewhere, it is frosted glass with the same rim, highlights and shadows.
- * Every `--vitre-*` value can be set on any element, or globally on :root.
+ * Every `--dg-*` value can be set on any element, or globally on :root.
  */
 
 :root {
-  --vitre-text: #fff;
-  --vitre-tint: rgb(255 255 255 / 0.06);
-  --vitre-accent: #0a84ff;
-  --vitre-on: #34c759;
-  --vitre-shadow: 0 16px 40px -14px rgb(0 0 0 / 0.42), 0 3px 10px -4px rgb(0 0 0 / 0.22);
+  --dg-text: #fff;
+  --dg-tint: rgb(255 255 255 / 0.06);
+  --dg-accent: #0a84ff;
+  --dg-on: #34c759;
+  --dg-shadow: 0 16px 40px -14px rgb(0 0 0 / 0.42), 0 3px 10px -4px rgb(0 0 0 / 0.22);
   /* springs: a bouncy one for touch, a gentle one for layout */
-  --vitre-spring: linear(0, 0.066, 0.23, 0.445, 0.669, 0.873, 1.037, 1.151, 1.214, 1.234, 1.219, 1.18, 1.13, 1.078, 1.03, 0.992, 0.965, 0.95, 0.945, 0.949, 0.958, 0.969, 0.982, 0.993, 1.002, 1.008, 1.012, 1.013, 1.012, 1.01, 1.007, 1.004, 1.002, 1, 0.998, 0.997, 0.997, 0.997, 0.998, 0.998, 1);
-  --vitre-spring-time: 1.1s;
-  --vitre-ease: linear(0, 0.057, 0.189, 0.352, 0.517, 0.667, 0.791, 0.886, 0.956, 1.002, 1.029, 1.042, 1.046, 1.043, 1.037, 1.03, 1.022, 1.015, 1.01, 1.005, 1.002, 1, 0.999, 0.998, 0.998, 0.998, 0.998, 0.999, 1);
-  --vitre-ease-time: 0.73s;
+  --dg-spring: linear(0, 0.066, 0.23, 0.445, 0.669, 0.873, 1.037, 1.151, 1.214, 1.234, 1.219, 1.18, 1.13, 1.078, 1.03, 0.992, 0.965, 0.95, 0.945, 0.949, 0.958, 0.969, 0.982, 0.993, 1.002, 1.008, 1.012, 1.013, 1.012, 1.01, 1.007, 1.004, 1.002, 1, 0.998, 0.997, 0.997, 0.997, 0.998, 0.998, 1);
+  --dg-spring-time: 1.1s;
+  --dg-ease: linear(0, 0.057, 0.189, 0.352, 0.517, 0.667, 0.791, 0.886, 0.956, 1.002, 1.029, 1.042, 1.046, 1.043, 1.037, 1.03, 1.022, 1.015, 1.01, 1.005, 1.002, 1, 0.999, 0.998, 0.998, 0.998, 0.998, 0.999, 1);
+  --dg-ease-time: 0.73s;
 
   /*
    * Optics, read by the script: unitless numbers. They inherit, so they can be tuned for the whole
    * page here or for a part of it; components set their own rim and frosting.
    */
-  --vitre-refraction: 1; /* how strongly the rim bends, 0 = flat glass */
-  --vitre-ior: 1.5; /* index of refraction */
-  --vitre-dispersion: 0.5; /* color fringes along the rim, 0–1 */
-  --vitre-saturation: 1.7;
-  --vitre-brightness: 1.05;
-  --vitre-frost: 0; /* extra frosting for every pane, px */
+  --dg-refraction: 1; /* how strongly the rim bends, 0 = flat glass */
+  --dg-ior: 1.5; /* index of refraction */
+  --dg-dispersion: 0.5; /* color fringes along the rim, 0–1 */
+  --dg-saturation: 1.7;
+  --dg-brightness: 1.05;
+  --dg-frost: 0; /* extra frosting for every pane, px */
 
   /* light: a unit vector towards it (the pointer when there is one), and how close it is */
-  --vitre-lx: -0.6;
-  --vitre-ly: -0.8;
-  --vitre-angle: 143deg;
-  --vitre-near: 0;
+  --dg-lx: -0.6;
+  --dg-ly: -0.8;
+  --dg-angle: 143deg;
+  --dg-near: 0;
 }
 
 /* ---------- the material ---------- */
 
-:where(.vitre) {
-  --vitre-bezel: 24; /* width of the curved rim, px */
-  --vitre-blur: 1.5; /* frosting, px */
-  --vitre-magnify: 1; /* a loupe, for thumbs */
+:where(.dg) {
+  --dg-bezel: 24; /* width of the curved rim, px */
+  --dg-blur: 1.5; /* frosting, px */
+  --dg-magnify: 1; /* a loupe, for thumbs */
   /* the rim: a hairline, the lit edge, the light bouncing off the far edge, a glow inside */
-  --vitre-bevel:
+  --dg-bevel:
     inset 0 0 0 1px rgb(255 255 255 / 0.1),
-    inset calc(var(--vitre-lx) * -1.6px) calc(var(--vitre-ly) * -1.6px) 1px -0.4px rgb(255 255 255 / 0.62),
-    inset calc(var(--vitre-lx) * 1.4px) calc(var(--vitre-ly) * 1.4px) 1.5px -0.6px rgb(255 255 255 / 0.3),
-    inset calc(var(--vitre-lx) * -5px) calc(var(--vitre-ly) * -5px) 12px -6px rgb(255 255 255 / 0.22),
-    inset 0 0 calc(var(--vitre-bezel) * 0.8px) rgb(255 255 255 / 0.06);
+    inset calc(var(--dg-lx) * -1.6px) calc(var(--dg-ly) * -1.6px) 1px -0.4px rgb(255 255 255 / 0.62),
+    inset calc(var(--dg-lx) * 1.4px) calc(var(--dg-ly) * 1.4px) 1.5px -0.6px rgb(255 255 255 / 0.3),
+    inset calc(var(--dg-lx) * -5px) calc(var(--dg-ly) * -5px) 12px -6px rgb(255 255 255 / 0.22),
+    inset 0 0 calc(var(--dg-bezel) * 0.8px) rgb(255 255 255 / 0.06);
 
   position: relative;
   isolation: isolate;
-  color: var(--vitre-text);
-  background-color: var(--vitre-tint);
-  -webkit-backdrop-filter: blur(calc((var(--vitre-blur) + var(--vitre-frost)) * 3px + 8px))
-    saturate(var(--vitre-saturation)) brightness(var(--vitre-brightness));
+  color: var(--dg-text);
+  background-color: var(--dg-tint);
+  -webkit-backdrop-filter: blur(calc((var(--dg-blur) + var(--dg-frost)) * 3px + 8px))
+    saturate(var(--dg-saturation)) brightness(var(--dg-brightness));
   backdrop-filter: var(
-    --vitre-filter,
-    blur(calc((var(--vitre-blur) + var(--vitre-frost)) * 3px + 8px)) saturate(var(--vitre-saturation))
-      brightness(var(--vitre-brightness))
+    --dg-filter,
+    blur(calc((var(--dg-blur) + var(--dg-frost)) * 3px + 8px)) saturate(var(--dg-saturation))
+      brightness(var(--dg-brightness))
   );
-  box-shadow: var(--vitre-bevel), var(--vitre-shadow);
+  box-shadow: var(--dg-bevel), var(--dg-shadow);
 }
 
 /* the specular rim: brightest where the edge faces the light */
-:where(.vitre)::before {
+:where(.dg)::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -73,7 +73,7 @@
   border-radius: inherit;
   padding: 1.2px;
   background: linear-gradient(
-      var(--vitre-angle),
+      var(--dg-angle),
       rgb(255 255 255 / 0.9),
       rgb(255 255 255 / 0.22) 22%,
       rgb(255 255 255 / 0) 42%,
@@ -89,57 +89,57 @@
 }
 
 /* glare: a soft light where the pointer is, brighter as it comes close */
-:where(.vitre)::after {
+:where(.dg)::after {
   content: '';
   position: absolute;
   inset: 0;
   z-index: 1;
   border-radius: inherit;
   background: radial-gradient(
-    circle 140px at var(--vitre-mx, 30%) var(--vitre-my, 0%),
+    circle 140px at var(--dg-mx, 30%) var(--dg-my, 0%),
     rgb(255 255 255 / 0.2),
     rgb(255 255 255 / 0.06) 45%,
     transparent 70%
   );
   mix-blend-mode: plus-lighter;
-  opacity: calc(var(--vitre-near) * 0.9);
+  opacity: calc(var(--dg-near) * 0.9);
   transition: opacity 0.4s;
   pointer-events: none;
 }
 
 /* tints */
-:where(.vitre--clear) {
-  --vitre-tint: rgb(255 255 255 / 0.01);
-  --vitre-blur: 0;
+:where(.dg--clear) {
+  --dg-tint: rgb(255 255 255 / 0.01);
+  --dg-blur: 0;
 }
-:where(.vitre--frosted) {
-  --vitre-blur: 8;
-  --vitre-tint: rgb(255 255 255 / 0.1);
+:where(.dg--frosted) {
+  --dg-blur: 8;
+  --dg-tint: rgb(255 255 255 / 0.1);
 }
-:where(.vitre--dark) {
-  --vitre-tint: rgb(10 12 20 / 0.32);
-  --vitre-brightness: 0.92;
+:where(.dg--dark) {
+  --dg-tint: rgb(10 12 20 / 0.32);
+  --dg-brightness: 0.92;
 }
-:where(.vitre--light) {
-  --vitre-tint: rgb(255 255 255 / 0.4);
-  --vitre-text: #111;
+:where(.dg--light) {
+  --dg-tint: rgb(255 255 255 / 0.4);
+  --dg-text: #111;
 }
-:where(.vitre--tinted) {
-  --vitre-tint: color-mix(in oklab, var(--vitre-accent) 62%, transparent);
+:where(.dg--tinted) {
+  --dg-tint: color-mix(in oklab, var(--dg-accent) 62%, transparent);
 }
 
-:where(.vitre):focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--vitre-accent) 80%, white);
+:where(.dg):focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--dg-accent) 80%, white);
   outline-offset: 3px;
 }
 
 /* ---------- touch: squish, follow the finger, spring back ---------- */
 
-:where(.vitre-button, .vitre-icon, .vitre-chip, [data-vitre-press]) {
-  transform: translate(var(--vitre-pull-x, 0px), var(--vitre-pull-y, 0px))
-    scale(calc(var(--vitre-press, 1) * var(--vitre-sx, 1)), calc(var(--vitre-press, 1) * var(--vitre-sy, 1)));
+:where(.dg-button, .dg-icon, .dg-chip, [data-dg-press]) {
+  transform: translate(var(--dg-pull-x, 0px), var(--dg-pull-y, 0px))
+    scale(calc(var(--dg-press, 1) * var(--dg-sx, 1)), calc(var(--dg-press, 1) * var(--dg-sy, 1)));
   transition:
-    transform var(--vitre-spring-time) var(--vitre-spring),
+    transform var(--dg-spring-time) var(--dg-spring),
     background-color 0.3s,
     color 0.3s,
     opacity 0.3s;
@@ -148,8 +148,8 @@
   user-select: none;
 }
 
-:where(.vitre-button, .vitre-icon, .vitre-chip, [data-vitre-press])[data-pressed] {
-  --vitre-press: 1.07;
+:where(.dg-button, .dg-icon, .dg-chip, [data-dg-press])[data-pressed] {
+  --dg-press: 1.07;
   transition:
     transform 0.16s ease-out,
     background-color 0.3s,
@@ -157,9 +157,9 @@
     opacity 0.3s;
 }
 
-:where(.vitre-button, .vitre-icon, .vitre-chip, [data-vitre-press])[data-pressed]::after {
+:where(.dg-button, .dg-icon, .dg-chip, [data-dg-press])[data-pressed]::after {
   background: radial-gradient(
-    circle 90px at var(--vitre-mx, 50%) var(--vitre-my, 50%),
+    circle 90px at var(--dg-mx, 50%) var(--dg-my, 50%),
     rgb(255 255 255 / 0.42),
     rgb(255 255 255 / 0.1) 50%,
     transparent 75%
@@ -170,9 +170,9 @@
 
 /* ---------- buttons ---------- */
 
-.vitre-button {
-  --vitre-bezel: 14;
-  --vitre-blur: 1;
+.dg-button {
+  --dg-bezel: 14;
+  --dg-blur: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -186,39 +186,39 @@
   font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1;
-  color: var(--vitre-text);
+  color: var(--dg-text);
   text-decoration: none;
   text-shadow: 0 1px 2px rgb(0 0 0 / 0.18);
   cursor: pointer;
 }
 
-.vitre-button > svg,
-.vitre-icon > svg,
-.vitre-chip > svg {
+.dg-button > svg,
+.dg-icon > svg,
+.dg-chip > svg {
   width: 1.2em;
   height: 1.2em;
   flex: none;
 }
 
-.vitre-button--sm {
+.dg-button--sm {
   min-height: 36px;
   padding: 0 16px;
   font-size: 14px;
 }
-.vitre-button--lg {
+.dg-button--lg {
   min-height: 56px;
   padding: 0 28px;
   font-size: 17px;
 }
-.vitre-button--block {
+.dg-button--block {
   display: flex;
   width: 100%;
 }
 
 /* opaque: the main action, like a white pill */
-.vitre-button--solid {
-  --vitre-refraction: 0;
-  --vitre-text: #0b0b10;
+.dg-button--solid {
+  --dg-refraction: 0;
+  --dg-text: #0b0b10;
   background: #fff;
   text-shadow: none;
   backdrop-filter: none;
@@ -226,18 +226,18 @@
   box-shadow:
     inset 0 -2px 4px rgb(0 0 0 / 0.08),
     inset 0 1px 0 rgb(255 255 255 / 0.9),
-    var(--vitre-shadow);
+    var(--dg-shadow);
 }
 
-.vitre-button:disabled,
-.vitre-icon:disabled {
+.dg-button:disabled,
+.dg-icon:disabled {
   opacity: 0.45;
   cursor: default;
 }
 
-.vitre-icon {
-  --vitre-bezel: 14;
-  --vitre-blur: 1;
+.dg-icon {
+  --dg-bezel: 14;
+  --dg-blur: 1;
   display: inline-grid;
   place-items: center;
   width: 46px;
@@ -247,13 +247,13 @@
   border-radius: 50%;
   font: inherit;
   font-size: 18px;
-  color: var(--vitre-text);
+  color: var(--dg-text);
   cursor: pointer;
 }
 
-.vitre-chip {
-  --vitre-bezel: 10;
-  --vitre-blur: 1;
+.dg-chip {
+  --dg-bezel: 10;
+  --dg-blur: 1;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -264,20 +264,20 @@
   font: inherit;
   font-size: 13.5px;
   font-weight: 600;
-  color: var(--vitre-text);
+  color: var(--dg-text);
   cursor: pointer;
 }
 
-.vitre-chip[aria-pressed='true'],
-.vitre-chip[aria-selected='true'] {
-  --vitre-tint: color-mix(in oklab, var(--vitre-accent) 60%, transparent);
+.dg-chip[aria-pressed='true'],
+.dg-chip[aria-selected='true'] {
+  --dg-tint: color-mix(in oklab, var(--dg-accent) 60%, transparent);
 }
 
 /* ---------- surfaces ---------- */
 
-.vitre-card {
-  --vitre-bezel: 34;
-  --vitre-blur: 7;
+.dg-card {
+  --dg-bezel: 34;
+  --dg-blur: 7;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -289,7 +289,7 @@
  * Etched glass inside a pane: nested backdrop filters only see their parent's content, so tiles
  * don't refract (Apple's guidance too: no glass on glass). Same rim and light, lighter tint.
  */
-.vitre-tile {
+.dg-tile {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -299,12 +299,12 @@
   padding: 18px 12px;
   border: 1px solid transparent;
   border-radius: 24px;
-  color: var(--vitre-text);
+  color: var(--dg-text);
   background:
-    radial-gradient(circle 120px at var(--vitre-mx, 50%) var(--vitre-my, 0%), rgb(255 255 255 / calc(var(--vitre-near) * 0.14)), transparent 70%) padding-box,
+    radial-gradient(circle 120px at var(--dg-mx, 50%) var(--dg-my, 0%), rgb(255 255 255 / calc(var(--dg-near) * 0.14)), transparent 70%) padding-box,
     linear-gradient(rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.04)) padding-box,
     linear-gradient(
-        var(--vitre-angle),
+        var(--dg-angle),
         rgb(255 255 255 / 0.55),
         rgb(255 255 255 / 0.1) 35%,
         rgb(255 255 255 / 0.04) 60%,
@@ -312,18 +312,18 @@
       )
       border-box;
   box-shadow:
-    inset calc(var(--vitre-lx) * -1px) calc(var(--vitre-ly) * -1px) 1px -0.5px rgb(255 255 255 / 0.4),
+    inset calc(var(--dg-lx) * -1px) calc(var(--dg-ly) * -1px) 1px -0.5px rgb(255 255 255 / 0.4),
     0 8px 20px -12px rgb(0 0 0 / 0.35);
   text-decoration: none;
 }
 
-a.vitre-tile,
-button.vitre-tile {
+a.dg-tile,
+button.dg-tile {
   font: inherit;
   cursor: pointer;
 }
 
-.vitre-stat {
+.dg-stat {
   font-size: 24px;
   font-weight: 650;
   letter-spacing: -0.02em;
@@ -331,23 +331,23 @@ button.vitre-tile {
   font-variant-numeric: tabular-nums;
 }
 
-.vitre-label {
+.dg-label {
   font-size: 13px;
   opacity: 0.78;
 }
 
-.vitre-avatar {
+.dg-avatar {
   display: grid;
   place-items: center;
   padding: 6px;
   border-radius: 50%;
-  background: linear-gradient(var(--vitre-angle, 143deg), rgb(255 255 255 / 0.5), rgb(255 255 255 / 0.08) 50%, rgb(255 255 255 / 0.3));
+  background: linear-gradient(var(--dg-angle, 143deg), rgb(255 255 255 / 0.5), rgb(255 255 255 / 0.08) 50%, rgb(255 255 255 / 0.3));
   box-shadow:
     0 10px 30px -10px rgb(0 0 0 / 0.4),
     inset 0 0 0 1px rgb(255 255 255 / 0.2);
 }
 
-.vitre-avatar > * {
+.dg-avatar > * {
   display: block;
   width: 100%;
   height: 100%;
@@ -357,9 +357,9 @@ button.vitre-tile {
 
 /* ---------- text fields ---------- */
 
-.vitre-field {
-  --vitre-bezel: 14;
-  --vitre-blur: 2;
+.dg-field {
+  --dg-bezel: 14;
+  --dg-blur: 2;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -370,15 +370,15 @@ button.vitre-tile {
   transition: box-shadow 0.3s;
 }
 
-.vitre-field > svg {
+.dg-field > svg {
   width: 18px;
   height: 18px;
   flex: none;
   opacity: 0.75;
 }
 
-.vitre-field input,
-.vitre-field textarea {
+.dg-field input,
+.dg-field textarea {
   flex: 1;
   min-width: 0;
   padding: 0;
@@ -390,27 +390,27 @@ button.vitre-tile {
   font-size: 15px;
 }
 
-.vitre-field input::placeholder,
-.vitre-field textarea::placeholder {
+.dg-field input::placeholder,
+.dg-field textarea::placeholder {
   color: inherit;
   opacity: 0.6;
 }
 
-.vitre-field:focus-within {
+.dg-field:focus-within {
   box-shadow:
-    var(--vitre-bevel),
-    0 0 0 3px color-mix(in oklab, var(--vitre-accent) 55%, transparent),
-    var(--vitre-shadow);
+    var(--dg-bevel),
+    0 0 0 3px color-mix(in oklab, var(--dg-accent) 55%, transparent),
+    var(--dg-shadow);
 }
 
 /* ---------- droplet: the selection of segmented controls, tab bars, toolbars and menus ---------- */
 
-.vitre-droplet {
-  --vitre-bezel: 10;
-  --vitre-blur: 0;
-  --vitre-dispersion: 0.8;
-  --vitre-tint: rgb(255 255 255 / 0.14);
-  --vitre-shadow: 0 6px 16px -6px rgb(0 0 0 / 0.4);
+.dg-droplet {
+  --dg-bezel: 10;
+  --dg-blur: 0;
+  --dg-dispersion: 0.8;
+  --dg-tint: rgb(255 255 255 / 0.14);
+  --dg-shadow: 0 6px 16px -6px rgb(0 0 0 / 0.4);
   position: absolute;
   top: 0;
   left: 0;
@@ -424,22 +424,22 @@ button.vitre-tile {
     background-color 0.3s;
 }
 
-.vitre-droplet[data-hidden] {
+.dg-droplet[data-hidden] {
   opacity: 0;
 }
 
 /* held: a clear lens, magnifying what it passes over */
-.vitre-droplet[data-lifted] {
-  --vitre-magnify: 1.3;
-  --vitre-bezel: 14;
-  --vitre-tint: rgb(255 255 255 / 0.03);
-  --vitre-shadow: 0 14px 30px -10px rgb(0 0 0 / 0.5);
+.dg-droplet[data-lifted] {
+  --dg-magnify: 1.3;
+  --dg-bezel: 14;
+  --dg-tint: rgb(255 255 255 / 0.03);
+  --dg-shadow: 0 14px 30px -10px rgb(0 0 0 / 0.5);
 }
 
 /* ---------- segmented control ---------- */
 
-.vitre-segmented {
-  --vitre-bezel: 16;
+.dg-segmented {
+  --dg-bezel: 16;
   display: inline-flex;
   padding: 4px;
   border-radius: 999px;
@@ -447,7 +447,7 @@ button.vitre-tile {
   user-select: none;
 }
 
-.vitre-segmented > [role='radio'] {
+.dg-segmented > [role='radio'] {
   position: relative;
   min-height: 38px;
   padding: 0 18px;
@@ -465,19 +465,19 @@ button.vitre-tile {
   -webkit-tap-highlight-color: transparent;
 }
 
-.vitre-segmented > [role='radio'][aria-checked='true'] {
+.dg-segmented > [role='radio'][aria-checked='true'] {
   opacity: 1;
 }
 
-.vitre-segmented > [role='radio']:focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--vitre-accent) 80%, white);
+.dg-segmented > [role='radio']:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--dg-accent) 80%, white);
   outline-offset: -2px;
 }
 
 /* ---------- tab bar ---------- */
 
-.vitre-tabbar {
-  --vitre-bezel: 22;
+.dg-tabbar {
+  --dg-bezel: 22;
   display: inline-flex;
   padding: 5px;
   border-radius: 999px;
@@ -485,7 +485,7 @@ button.vitre-tile {
   user-select: none;
 }
 
-.vitre-tabbar > [role='tab'] {
+.dg-tabbar > [role='tab'] {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -510,25 +510,25 @@ button.vitre-tile {
   -webkit-tap-highlight-color: transparent;
 }
 
-.vitre-tabbar > [role='tab'] > svg {
+.dg-tabbar > [role='tab'] > svg {
   width: 24px;
   height: 24px;
 }
 
-.vitre-tabbar > [role='tab'][aria-selected='true'] {
+.dg-tabbar > [role='tab'][aria-selected='true'] {
   opacity: 1;
-  color: var(--vitre-tab-active, var(--vitre-text));
+  color: var(--dg-tab-active, var(--dg-text));
 }
 
-.vitre-tabbar > [role='tab']:focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--vitre-accent) 80%, white);
+.dg-tabbar > [role='tab']:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--dg-accent) 80%, white);
   outline-offset: -2px;
 }
 
 /* ---------- toolbar ---------- */
 
-.vitre-toolbar {
-  --vitre-bezel: 18;
+.dg-toolbar {
+  --dg-bezel: 18;
   display: inline-flex;
   align-items: center;
   gap: 2px;
@@ -536,7 +536,7 @@ button.vitre-tile {
   border-radius: 999px;
 }
 
-.vitre-toolbar > :is(button, a, [role='button']) {
+.dg-toolbar > :is(button, a, [role='button']) {
   position: relative;
   display: inline-grid;
   place-items: center;
@@ -554,12 +554,12 @@ button.vitre-tile {
   -webkit-tap-highlight-color: transparent;
 }
 
-.vitre-toolbar > :is(button, a) > svg {
+.dg-toolbar > :is(button, a) > svg {
   width: 20px;
   height: 20px;
 }
 
-.vitre-toolbar > hr {
+.dg-toolbar > hr {
   width: 1px;
   height: 22px;
   margin: 0 4px;
@@ -569,9 +569,9 @@ button.vitre-tile {
 
 /* ---------- menu ---------- */
 
-.vitre-menu {
-  --vitre-bezel: 26;
-  --vitre-blur: 4;
+.dg-menu {
+  --dg-bezel: 26;
+  --dg-blur: 4;
   display: flex;
   flex-direction: column;
   min-width: 220px;
@@ -579,7 +579,7 @@ button.vitre-tile {
   border-radius: 26px;
 }
 
-.vitre-menu > :is([role^='menuitem'], button, a) {
+.dg-menu > :is([role^='menuitem'], button, a) {
   position: relative;
   display: flex;
   align-items: center;
@@ -597,30 +597,30 @@ button.vitre-tile {
   cursor: pointer;
 }
 
-.vitre-menu > :is([role^='menuitem'], button, a) > svg {
+.dg-menu > :is([role^='menuitem'], button, a) > svg {
   width: 18px;
   height: 18px;
   opacity: 0.8;
 }
 
-.vitre-menu > hr {
+.dg-menu > hr {
   height: 1px;
   margin: 4px 12px;
   border: 0;
   background: rgb(255 255 255 / 0.16);
 }
 
-.vitre-menu .vitre-droplet {
+.dg-menu .dg-droplet {
   border-radius: 20px;
-  --vitre-tint: rgb(255 255 255 / 0.12);
+  --dg-tint: rgb(255 255 255 / 0.12);
 }
 
 /* ---------- switch ---------- */
 
-.vitre-switch {
-  --vitre-track-w: 64px;
-  --vitre-track-h: 28px;
-  --vitre-thumb-w: 38px;
+.dg-switch {
+  --dg-track-w: 64px;
+  --dg-track-h: 28px;
+  --dg-thumb-w: 38px;
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -632,11 +632,11 @@ button.vitre-tile {
 }
 
 /* a native checkbox until the script builds the track */
-.vitre-switch > input {
-  accent-color: var(--vitre-on);
+.dg-switch > input {
+  accent-color: var(--dg-on);
 }
 
-.vitre-switch:has(> .vitre-switch__track) > input {
+.dg-switch:has(> .dg-switch__track) > input {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -645,82 +645,82 @@ button.vitre-tile {
   pointer-events: none;
 }
 
-.vitre-switch__track {
+.dg-switch__track {
   position: relative;
   flex: none;
-  width: var(--vitre-track-w);
-  height: var(--vitre-track-h);
+  width: var(--dg-track-w);
+  height: var(--dg-track-h);
   border-radius: 999px;
   background: rgb(120 120 128 / 0.34);
   box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.2);
   transition: background-color 0.3s;
 }
 
-.vitre-switch > input:checked + .vitre-switch__track {
-  background: var(--vitre-on);
+.dg-switch > input:checked + .dg-switch__track {
+  background: var(--dg-on);
 }
 
-.vitre-switch > input:focus-visible + .vitre-switch__track {
-  outline: 2px solid color-mix(in oklab, var(--vitre-accent) 80%, white);
+.dg-switch > input:focus-visible + .dg-switch__track {
+  outline: 2px solid color-mix(in oklab, var(--dg-accent) 80%, white);
   outline-offset: 3px;
 }
 
-.vitre-switch__thumb {
-  --vitre-pos: 0;
-  --vitre-bezel: 9;
-  --vitre-blur: 0;
-  --vitre-dispersion: 0.9;
-  --vitre-shadow: 0 3px 8px -2px rgb(0 0 0 / 0.3);
+.dg-switch__thumb {
+  --dg-pos: 0;
+  --dg-bezel: 9;
+  --dg-blur: 0;
+  --dg-dispersion: 0.9;
+  --dg-shadow: 0 3px 8px -2px rgb(0 0 0 / 0.3);
   position: absolute;
   top: 2px;
-  left: calc(2px + var(--vitre-pos) * (100% - 4px - var(--vitre-thumb-w)));
-  width: var(--vitre-thumb-w);
-  height: calc(var(--vitre-track-h) - 4px);
+  left: calc(2px + var(--dg-pos) * (100% - 4px - var(--dg-thumb-w)));
+  width: var(--dg-thumb-w);
+  height: calc(var(--dg-track-h) - 4px);
   border-radius: 999px;
   background-color: #fff;
   transition:
-    left var(--vitre-ease-time) var(--vitre-ease),
-    width var(--vitre-ease-time) var(--vitre-ease),
-    transform var(--vitre-spring-time) var(--vitre-spring),
+    left var(--dg-ease-time) var(--dg-ease),
+    width var(--dg-ease-time) var(--dg-ease),
+    transform var(--dg-spring-time) var(--dg-spring),
     background-color 0.25s;
 }
 
-.vitre-switch > input:checked + .vitre-switch__track > .vitre-switch__thumb {
-  --vitre-pos: 1;
+.dg-switch > input:checked + .dg-switch__track > .dg-switch__thumb {
+  --dg-pos: 1;
 }
 
 /* held: the thumb swells past the track into a clear lens */
-.vitre-switch[data-lifted] {
-  --vitre-thumb-w: 46px;
+.dg-switch[data-lifted] {
+  --dg-thumb-w: 46px;
 }
-.vitre-switch[data-lifted] .vitre-switch__thumb {
-  --vitre-magnify: 1.25;
-  --vitre-shadow: 0 6px 14px -4px rgb(0 0 0 / 0.35);
+.dg-switch[data-lifted] .dg-switch__thumb {
+  --dg-magnify: 1.25;
+  --dg-shadow: 0 6px 14px -4px rgb(0 0 0 / 0.35);
   background-color: rgb(255 255 255 / 0.02);
   transform: scale(1.18, 1.36);
   transition:
-    left var(--vitre-ease-time) var(--vitre-ease),
+    left var(--dg-ease-time) var(--dg-ease),
     width 0.3s ease-out,
     transform 0.3s ease-out,
     background-color 0.2s;
 }
-.vitre-switch[data-dragging] .vitre-switch__thumb {
+.dg-switch[data-dragging] .dg-switch__thumb {
   transition:
     width 0.3s ease-out,
     transform 0.3s ease-out,
     background-color 0.2s;
 }
 
-.vitre-switch > input:disabled ~ * {
+.dg-switch > input:disabled ~ * {
   opacity: 0.45;
 }
 
 /* ---------- slider ---------- */
 
-.vitre-slider {
-  --vitre-value: 0.5;
-  --vitre-thumb-w: 38px;
-  --vitre-thumb-h: 24px;
+.dg-slider {
+  --dg-value: 0.5;
+  --dg-thumb-w: 38px;
+  --dg-thumb-h: 24px;
   position: relative;
   display: flex;
   align-items: center;
@@ -729,7 +729,7 @@ button.vitre-tile {
   -webkit-tap-highlight-color: transparent;
 }
 
-.vitre-slider__track {
+.dg-slider__track {
   position: absolute;
   left: 0;
   right: 0;
@@ -740,34 +740,34 @@ button.vitre-tile {
   overflow: hidden;
 }
 
-.vitre-slider__fill {
+.dg-slider__fill {
   position: absolute;
   inset: 0 auto 0 0;
-  width: calc(var(--vitre-thumb-w) / 2 + var(--vitre-value) * (100% - var(--vitre-thumb-w)));
-  background: var(--vitre-accent);
+  width: calc(var(--dg-thumb-w) / 2 + var(--dg-value) * (100% - var(--dg-thumb-w)));
+  background: var(--dg-accent);
 }
 
-.vitre-slider__thumb {
-  --vitre-bezel: 9;
-  --vitre-blur: 0;
-  --vitre-dispersion: 0.9;
-  --vitre-shadow: 0 3px 8px -2px rgb(0 0 0 / 0.32);
+.dg-slider__thumb {
+  --dg-bezel: 9;
+  --dg-blur: 0;
+  --dg-dispersion: 0.9;
+  --dg-shadow: 0 3px 8px -2px rgb(0 0 0 / 0.32);
   position: absolute;
   top: 50%;
-  left: calc(var(--vitre-value) * (100% - var(--vitre-thumb-w)));
-  width: var(--vitre-thumb-w);
-  height: var(--vitre-thumb-h);
-  margin-top: calc(var(--vitre-thumb-h) / -2);
+  left: calc(var(--dg-value) * (100% - var(--dg-thumb-w)));
+  width: var(--dg-thumb-w);
+  height: var(--dg-thumb-h);
+  margin-top: calc(var(--dg-thumb-h) / -2);
   border-radius: 999px;
   background-color: #fff;
   pointer-events: none;
   transition:
-    transform var(--vitre-spring-time) var(--vitre-spring),
+    transform var(--dg-spring-time) var(--dg-spring),
     background-color 0.25s;
 }
 
-.vitre-slider[data-lifted] .vitre-slider__thumb {
-  --vitre-magnify: 1.5;
+.dg-slider[data-lifted] .dg-slider__thumb {
+  --dg-magnify: 1.5;
   background-color: rgb(255 255 255 / 0.05);
   transform: scale(1.45, 1.6);
   transition:
@@ -776,12 +776,12 @@ button.vitre-tile {
 }
 
 /* a native range until the script builds the track; then it stays on top, invisible, and does the work */
-.vitre-slider > input {
+.dg-slider > input {
   width: 100%;
-  accent-color: var(--vitre-accent);
+  accent-color: var(--dg-accent);
 }
 
-.vitre-slider:has(> .vitre-slider__thumb) > input {
+.dg-slider:has(> .dg-slider__thumb) > input {
   position: absolute;
   inset: 0;
   z-index: 3;
@@ -795,27 +795,27 @@ button.vitre-tile {
   background: none;
 }
 
-.vitre-slider:has(> .vitre-slider__thumb) > input::-webkit-slider-thumb {
+.dg-slider:has(> .dg-slider__thumb) > input::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: var(--vitre-thumb-w);
-  height: var(--vitre-thumb-h);
+  width: var(--dg-thumb-w);
+  height: var(--dg-thumb-h);
 }
 
-.vitre-slider:has(> .vitre-slider__thumb) > input::-moz-range-thumb {
-  width: var(--vitre-thumb-w);
-  height: var(--vitre-thumb-h);
+.dg-slider:has(> .dg-slider__thumb) > input::-moz-range-thumb {
+  width: var(--dg-thumb-w);
+  height: var(--dg-thumb-h);
   border: 0;
 }
 
-.vitre-slider:has(> input:focus-visible) .vitre-slider__thumb {
-  outline: 2px solid color-mix(in oklab, var(--vitre-accent) 80%, white);
+.dg-slider:has(> input:focus-visible) .dg-slider__thumb {
+  outline: 2px solid color-mix(in oklab, var(--dg-accent) 80%, white);
   outline-offset: 3px;
 }
 
 /* ---------- toast ---------- */
 
-.vitre-toasts {
+.dg-toasts {
   position: fixed;
   top: max(16px, env(safe-area-inset-top));
   left: 50%;
@@ -827,9 +827,9 @@ button.vitre-tile {
   pointer-events: none;
 }
 
-.vitre-toast {
-  --vitre-bezel: 16;
-  --vitre-blur: 3;
+.dg-toast {
+  --dg-bezel: 16;
+  --dg-blur: 3;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -841,23 +841,23 @@ button.vitre-tile {
   pointer-events: auto;
   cursor: pointer;
   transition:
-    transform var(--vitre-spring-time) var(--vitre-spring),
+    transform var(--dg-spring-time) var(--dg-spring),
     opacity 0.35s;
 }
 
-.vitre-toast > svg {
+.dg-toast > svg {
   width: 20px;
   height: 20px;
 }
 
 @starting-style {
-  .vitre-toast {
+  .dg-toast {
     transform: translateY(-140%) scale(0.5, 0.7);
     opacity: 0;
   }
 }
 
-.vitre-toast[data-leaving] {
+.dg-toast[data-leaving] {
   transform: translateY(-90%) scale(0.8);
   opacity: 0;
   transition:
@@ -867,9 +867,9 @@ button.vitre-tile {
 
 /* ---------- sheet (on <dialog>) ---------- */
 
-dialog.vitre-sheet {
-  --vitre-bezel: 32;
-  --vitre-blur: 5;
+dialog.dg-sheet {
+  --dg-bezel: 32;
+  --dg-blur: 5;
   width: min(440px, calc(100vw - 32px));
   max-height: calc(100dvh - 48px);
   margin: auto;
@@ -877,13 +877,13 @@ dialog.vitre-sheet {
   border: 0;
   border-radius: 38px;
   transition:
-    transform var(--vitre-spring-time) var(--vitre-spring),
+    transform var(--dg-spring-time) var(--dg-spring),
     opacity 0.3s,
     overlay 0.4s allow-discrete,
     display 0.4s allow-discrete;
 }
 
-dialog.vitre-sheet:not([open]) {
+dialog.dg-sheet:not([open]) {
   transform: translateY(40px) scale(0.92);
   opacity: 0;
   transition:
@@ -894,13 +894,13 @@ dialog.vitre-sheet:not([open]) {
 }
 
 @starting-style {
-  dialog.vitre-sheet[open] {
+  dialog.dg-sheet[open] {
     transform: translateY(60px) scale(0.85);
     opacity: 0;
   }
 }
 
-dialog.vitre-sheet::backdrop {
+dialog.dg-sheet::backdrop {
   background: rgb(0 0 0 / 0.28);
   transition:
     background-color 0.3s,
@@ -909,7 +909,7 @@ dialog.vitre-sheet::backdrop {
 }
 
 @starting-style {
-  dialog.vitre-sheet[open]::backdrop {
+  dialog.dg-sheet[open]::backdrop {
     background: rgb(0 0 0 / 0);
   }
 }
@@ -917,21 +917,21 @@ dialog.vitre-sheet::backdrop {
 /* ---------- preferences ---------- */
 
 @media (prefers-reduced-transparency: reduce) {
-  :where(.vitre) {
-    --vitre-tint: rgb(28 30 40 / 0.88);
+  :where(.dg) {
+    --dg-tint: rgb(28 30 40 / 0.88);
     backdrop-filter: blur(30px);
     -webkit-backdrop-filter: blur(30px);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :where(.vitre-button, .vitre-icon, .vitre-chip, [data-vitre-press], .vitre-toast, dialog.vitre-sheet) {
+  :where(.dg-button, .dg-icon, .dg-chip, [data-dg-press], .dg-toast, dialog.dg-sheet) {
     transition-duration: 0.01s !important;
   }
 }
 
 @media (forced-colors: active) {
-  :where(.vitre) {
+  :where(.dg) {
     border: 1px solid CanvasText;
     backdrop-filter: none;
   }

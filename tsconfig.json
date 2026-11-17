@@ -14,7 +14,7 @@
     "noEmit": true,
     "types": [],
     "paths": {
-      "vitre": ["./src/index.ts"]
+      "deep-glass": ["./src/index.ts"]
     }
   },
   "include": ["src", "demo/src", "test"]

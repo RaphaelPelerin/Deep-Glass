@@ -1,12 +1,12 @@
 import '@fontsource-variable/inter';
-import 'vitre/style.css';
+import 'deep-glass/style.css';
 import './style.css';
-import { toast, vitre } from 'vitre';
+import { toast, deepGlass } from 'deep-glass';
 import { hydrateIcons, icon } from './icons';
 
 hydrateIcons();
 // ?frosted shows what Safari and Firefox get
-const glass = vitre({ refraction: !new URLSearchParams(location.search).has('frosted') });
+const glass = deepGlass({ refraction: !new URLSearchParams(location.search).has('frosted') });
 
 const $ = <T extends HTMLElement = HTMLElement>(selector: string) => document.querySelector<T>(selector)!;
 const iconNode = (name: string) => {
@@ -20,12 +20,12 @@ const iconNode = (name: string) => {
 if (!glass.refraction) {
   const support = $('#support');
   support.querySelector('span')!.textContent = 'Frosted here: open in Chrome or Edge to see it bend';
-  support.classList.add('vitre--dark');
+  support.classList.add('dg--dark');
 }
 
 // ---------- wallpapers: the tab bar ----------
 
-$('#wallpapers').addEventListener('vitre:change', (e) => {
+$('#wallpapers').addEventListener('dg:change', (e) => {
   document.body.dataset.wallpaper = (e as CustomEvent<{ value: string }>).detail.value;
 });
 
@@ -49,7 +49,7 @@ sheet.addEventListener('click', (e) => {
 
 $('#install').addEventListener('click', async () => {
   try {
-    await navigator.clipboard.writeText('npm i vitre');
+    await navigator.clipboard.writeText('npm i deep-glass');
     toast('Install command copied', { icon: iconNode('copy') });
   } catch {
     toast('Copy failed: select it instead');
@@ -58,7 +58,7 @@ $('#install').addEventListener('click', async () => {
 
 // chips: toggle
 $('#chips').addEventListener('click', (e) => {
-  const chip = (e.target as Element).closest<HTMLElement>('.vitre-chip');
+  const chip = (e.target as Element).closest<HTMLElement>('.dg-chip');
   if (chip) chip.setAttribute('aria-pressed', String(chip.getAttribute('aria-pressed') !== 'true'));
 });
 

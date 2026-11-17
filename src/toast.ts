@@ -11,13 +11,13 @@ let stack: HTMLElement | null = null;
 export function toast(message: string, options: ToastOptions = {}): () => void {
   if (!stack?.isConnected) {
     stack = document.createElement('div');
-    stack.className = 'vitre-toasts';
+    stack.className = 'dg-toasts';
     stack.setAttribute('role', 'status');
     stack.setAttribute('aria-live', 'polite');
     document.body.append(stack);
   }
   const el = document.createElement('div');
-  el.className = 'vitre vitre-toast';
+  el.className = 'dg dg-toast';
   if (options.icon) el.append(options.icon);
   el.append(message);
   stack.append(el);
