@@ -1,0 +1,938 @@
+/*
+ * vitre: liquid glass for the web.
+ *
+ * `.vitre` is the material. With the script, it refracts what is behind it (Chromium); without it,
+ * or elsewhere, it is frosted glass with the same rim, highlights and shadows.
+ * Every `--vitre-*` value can be set on any element, or globally on :root.
+ */
+
+:root {
+  --vitre-text: #fff;
+  --vitre-tint: rgb(255 255 255 / 0.06);
+  --vitre-accent: #0a84ff;
+  --vitre-on: #34c759;
+  --vitre-shadow: 0 16px 40px -14px rgb(0 0 0 / 0.42), 0 3px 10px -4px rgb(0 0 0 / 0.22);
+  /* springs: a bouncy one for touch, a gentle one for layout */
+  --vitre-spring: linear(0, 0.066, 0.23, 0.445, 0.669, 0.873, 1.037, 1.151, 1.214, 1.234, 1.219, 1.18, 1.13, 1.078, 1.03, 0.992, 0.965, 0.95, 0.945, 0.949, 0.958, 0.969, 0.982, 0.993, 1.002, 1.008, 1.012, 1.013, 1.012, 1.01, 1.007, 1.004, 1.002, 1, 0.998, 0.997, 0.997, 0.997, 0.998, 0.998, 1);
+  --vitre-spring-time: 1.1s;
+  --vitre-ease: linear(0, 0.057, 0.189, 0.352, 0.517, 0.667, 0.791, 0.886, 0.956, 1.002, 1.029, 1.042, 1.046, 1.043, 1.037, 1.03, 1.022, 1.015, 1.01, 1.005, 1.002, 1, 0.999, 0.998, 0.998, 0.998, 0.998, 0.999, 1);
+  --vitre-ease-time: 0.73s;
+
+  /*
+   * Optics, read by the script: unitless numbers. They inherit, so they can be tuned for the whole
+   * page here or for a part of it; components set their own rim and frosting.
+   */
+  --vitre-refraction: 1; /* how strongly the rim bends, 0 = flat glass */
+  --vitre-ior: 1.5; /* index of refraction */
+  --vitre-dispersion: 0.5; /* color fringes along the rim, 0–1 */
+  --vitre-saturation: 1.7;
+  --vitre-brightness: 1.05;
+  --vitre-frost: 0; /* extra frosting for every pane, px */
+
+  /* light: a unit vector towards it (the pointer when there is one), and how close it is */
+  --vitre-lx: -0.6;
+  --vitre-ly: -0.8;
+  --vitre-angle: 143deg;
+  --vitre-near: 0;
+}
+
+/* ---------- the material ---------- */
+
+:where(.vitre) {
+  --vitre-bezel: 24; /* width of the curved rim, px */
+  --vitre-blur: 1.5; /* frosting, px */
+  --vitre-magnify: 1; /* a loupe, for thumbs */
+  /* the rim: a hairline, the lit edge, the light bouncing off the far edge, a glow inside */
+  --vitre-bevel:
+    inset 0 0 0 1px rgb(255 255 255 / 0.1),
+    inset calc(var(--vitre-lx) * -1.6px) calc(var(--vitre-ly) * -1.6px) 1px -0.4px rgb(255 255 255 / 0.62),
+    inset calc(var(--vitre-lx) * 1.4px) calc(var(--vitre-ly) * 1.4px) 1.5px -0.6px rgb(255 255 255 / 0.3),
+    inset calc(var(--vitre-lx) * -5px) calc(var(--vitre-ly) * -5px) 12px -6px rgb(255 255 255 / 0.22),
+    inset 0 0 calc(var(--vitre-bezel) * 0.8px) rgb(255 255 255 / 0.06);
+
+  position: relative;
+  isolation: isolate;
+  color: var(--vitre-text);
+  background-color: var(--vitre-tint);
+  -webkit-backdrop-filter: blur(calc((var(--vitre-blur) + var(--vitre-frost)) * 3px + 8px))
+    saturate(var(--vitre-saturation)) brightness(var(--vitre-brightness));
+  backdrop-filter: var(
+    --vitre-filter,
+    blur(calc((var(--vitre-blur) + var(--vitre-frost)) * 3px + 8px)) saturate(var(--vitre-saturation))
+      brightness(var(--vitre-brightness))
+  );
+  box-shadow: var(--vitre-bevel), var(--vitre-shadow);
+}
+
+/* the specular rim: brightest where the edge faces the light */
+:where(.vitre)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  padding: 1.2px;
+  background: linear-gradient(
+      var(--vitre-angle),
+      rgb(255 255 255 / 0.9),
+      rgb(255 255 255 / 0.22) 22%,
+      rgb(255 255 255 / 0) 42%,
+      rgb(255 255 255 / 0) 62%,
+      rgb(255 255 255 / 0.28) 84%,
+      rgb(255 255 255 / 0.55)
+    )
+    border-box;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* glare: a soft light where the pointer is, brighter as it comes close */
+:where(.vitre)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle 140px at var(--vitre-mx, 30%) var(--vitre-my, 0%),
+    rgb(255 255 255 / 0.2),
+    rgb(255 255 255 / 0.06) 45%,
+    transparent 70%
+  );
+  mix-blend-mode: plus-lighter;
+  opacity: calc(var(--vitre-near) * 0.9);
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+
+/* tints */
+:where(.vitre--clear) {
+  --vitre-tint: rgb(255 255 255 / 0.01);
+  --vitre-blur: 0;
+}
+:where(.vitre--frosted) {
+  --vitre-blur: 8;
+  --vitre-tint: rgb(255 255 255 / 0.1);
+}
+:where(.vitre--dark) {
+  --vitre-tint: rgb(10 12 20 / 0.32);
+  --vitre-brightness: 0.92;
+}
+:where(.vitre--light) {
+  --vitre-tint: rgb(255 255 255 / 0.4);
+  --vitre-text: #111;
+}
+:where(.vitre--tinted) {
+  --vitre-tint: color-mix(in oklab, var(--vitre-accent) 62%, transparent);
+}
+
+:where(.vitre):focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--vitre-accent) 80%, white);
+  outline-offset: 3px;
+}
+
+/* ---------- touch: squish, follow the finger, spring back ---------- */
+
+:where(.vitre-button, .vitre-icon, .vitre-chip, [data-vitre-press]) {
+  transform: translate(var(--vitre-pull-x, 0px), var(--vitre-pull-y, 0px))
+    scale(calc(var(--vitre-press, 1) * var(--vitre-sx, 1)), calc(var(--vitre-press, 1) * var(--vitre-sy, 1)));
+  transition:
+    transform var(--vitre-spring-time) var(--vitre-spring),
+    background-color 0.3s,
+    color 0.3s,
+    opacity 0.3s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+:where(.vitre-button, .vitre-icon, .vitre-chip, [data-vitre-press])[data-pressed] {
+  --vitre-press: 1.07;
+  transition:
+    transform 0.16s ease-out,
+    background-color 0.3s,
+    color 0.3s,
+    opacity 0.3s;
+}
+
+:where(.vitre-button, .vitre-icon, .vitre-chip, [data-vitre-press])[data-pressed]::after {
+  background: radial-gradient(
+    circle 90px at var(--vitre-mx, 50%) var(--vitre-my, 50%),
+    rgb(255 255 255 / 0.42),
+    rgb(255 255 255 / 0.1) 50%,
+    transparent 75%
+  );
+  opacity: 1;
+  transition: opacity 0.1s;
+}
+
+/* ---------- buttons ---------- */
+
+.vitre-button {
+  --vitre-bezel: 14;
+  --vitre-blur: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  color: var(--vitre-text);
+  text-decoration: none;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.18);
+  cursor: pointer;
+}
+
+.vitre-button > svg,
+.vitre-icon > svg,
+.vitre-chip > svg {
+  width: 1.2em;
+  height: 1.2em;
+  flex: none;
+}
+
+.vitre-button--sm {
+  min-height: 36px;
+  padding: 0 16px;
+  font-size: 14px;
+}
+.vitre-button--lg {
+  min-height: 56px;
+  padding: 0 28px;
+  font-size: 17px;
+}
+.vitre-button--block {
+  display: flex;
+  width: 100%;
+}
+
+/* opaque: the main action, like a white pill */
+.vitre-button--solid {
+  --vitre-refraction: 0;
+  --vitre-text: #0b0b10;
+  background: #fff;
+  text-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    inset 0 -2px 4px rgb(0 0 0 / 0.08),
+    inset 0 1px 0 rgb(255 255 255 / 0.9),
+    var(--vitre-shadow);
+}
+
+.vitre-button:disabled,
+.vitre-icon:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.vitre-icon {
+  --vitre-bezel: 14;
+  --vitre-blur: 1;
+  display: inline-grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  font: inherit;
+  font-size: 18px;
+  color: var(--vitre-text);
+  cursor: pointer;
+}
+
+.vitre-chip {
+  --vitre-bezel: 10;
+  --vitre-blur: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--vitre-text);
+  cursor: pointer;
+}
+
+.vitre-chip[aria-pressed='true'],
+.vitre-chip[aria-selected='true'] {
+  --vitre-tint: color-mix(in oklab, var(--vitre-accent) 60%, transparent);
+}
+
+/* ---------- surfaces ---------- */
+
+.vitre-card {
+  --vitre-bezel: 34;
+  --vitre-blur: 7;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 28px;
+  border-radius: 36px;
+}
+
+/*
+ * Etched glass inside a pane: nested backdrop filters only see their parent's content, so tiles
+ * don't refract (Apple's guidance too: no glass on glass). Same rim and light, lighter tint.
+ */
+.vitre-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 18px 12px;
+  border: 1px solid transparent;
+  border-radius: 24px;
+  color: var(--vitre-text);
+  background:
+    radial-gradient(circle 120px at var(--vitre-mx, 50%) var(--vitre-my, 0%), rgb(255 255 255 / calc(var(--vitre-near) * 0.14)), transparent 70%) padding-box,
+    linear-gradient(rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.04)) padding-box,
+    linear-gradient(
+        var(--vitre-angle),
+        rgb(255 255 255 / 0.55),
+        rgb(255 255 255 / 0.1) 35%,
+        rgb(255 255 255 / 0.04) 60%,
+        rgb(255 255 255 / 0.32)
+      )
+      border-box;
+  box-shadow:
+    inset calc(var(--vitre-lx) * -1px) calc(var(--vitre-ly) * -1px) 1px -0.5px rgb(255 255 255 / 0.4),
+    0 8px 20px -12px rgb(0 0 0 / 0.35);
+  text-decoration: none;
+}
+
+a.vitre-tile,
+button.vitre-tile {
+  font: inherit;
+  cursor: pointer;
+}
+
+.vitre-stat {
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.vitre-label {
+  font-size: 13px;
+  opacity: 0.78;
+}
+
+.vitre-avatar {
+  display: grid;
+  place-items: center;
+  padding: 6px;
+  border-radius: 50%;
+  background: linear-gradient(var(--vitre-angle, 143deg), rgb(255 255 255 / 0.5), rgb(255 255 255 / 0.08) 50%, rgb(255 255 255 / 0.3));
+  box-shadow:
+    0 10px 30px -10px rgb(0 0 0 / 0.4),
+    inset 0 0 0 1px rgb(255 255 255 / 0.2);
+}
+
+.vitre-avatar > * {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* ---------- text fields ---------- */
+
+.vitre-field {
+  --vitre-bezel: 14;
+  --vitre-blur: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: 999px;
+  cursor: text;
+  transition: box-shadow 0.3s;
+}
+
+.vitre-field > svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  opacity: 0.75;
+}
+
+.vitre-field input,
+.vitre-field textarea {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 15px;
+}
+
+.vitre-field input::placeholder,
+.vitre-field textarea::placeholder {
+  color: inherit;
+  opacity: 0.6;
+}
+
+.vitre-field:focus-within {
+  box-shadow:
+    var(--vitre-bevel),
+    0 0 0 3px color-mix(in oklab, var(--vitre-accent) 55%, transparent),
+    var(--vitre-shadow);
+}
+
+/* ---------- droplet: the selection of segmented controls, tab bars, toolbars and menus ---------- */
+
+.vitre-droplet {
+  --vitre-bezel: 10;
+  --vitre-blur: 0;
+  --vitre-dispersion: 0.8;
+  --vitre-tint: rgb(255 255 255 / 0.14);
+  --vitre-shadow: 0 6px 16px -6px rgb(0 0 0 / 0.4);
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  border-radius: 999px;
+  transform-origin: center;
+  pointer-events: none;
+  will-change: transform;
+  transition:
+    opacity 0.25s,
+    background-color 0.3s;
+}
+
+.vitre-droplet[data-hidden] {
+  opacity: 0;
+}
+
+/* held: a clear lens, magnifying what it passes over */
+.vitre-droplet[data-lifted] {
+  --vitre-magnify: 1.3;
+  --vitre-bezel: 14;
+  --vitre-tint: rgb(255 255 255 / 0.03);
+  --vitre-shadow: 0 14px 30px -10px rgb(0 0 0 / 0.5);
+}
+
+/* ---------- segmented control ---------- */
+
+.vitre-segmented {
+  --vitre-bezel: 16;
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 999px;
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.vitre-segmented > [role='radio'] {
+  position: relative;
+  min-height: 38px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0.72;
+  cursor: pointer;
+  transition: opacity 0.3s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.vitre-segmented > [role='radio'][aria-checked='true'] {
+  opacity: 1;
+}
+
+.vitre-segmented > [role='radio']:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--vitre-accent) 80%, white);
+  outline-offset: -2px;
+}
+
+/* ---------- tab bar ---------- */
+
+.vitre-tabbar {
+  --vitre-bezel: 22;
+  display: inline-flex;
+  padding: 5px;
+  border-radius: 999px;
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.vitre-tabbar > [role='tab'] {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 72px;
+  min-height: 54px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.75;
+  cursor: pointer;
+  transition:
+    opacity 0.3s,
+    color 0.3s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.vitre-tabbar > [role='tab'] > svg {
+  width: 24px;
+  height: 24px;
+}
+
+.vitre-tabbar > [role='tab'][aria-selected='true'] {
+  opacity: 1;
+  color: var(--vitre-tab-active, var(--vitre-text));
+}
+
+.vitre-tabbar > [role='tab']:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--vitre-accent) 80%, white);
+  outline-offset: -2px;
+}
+
+/* ---------- toolbar ---------- */
+
+.vitre-toolbar {
+  --vitre-bezel: 18;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+}
+
+.vitre-toolbar > :is(button, a, [role='button']) {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  min-width: 42px;
+  height: 42px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.vitre-toolbar > :is(button, a) > svg {
+  width: 20px;
+  height: 20px;
+}
+
+.vitre-toolbar > hr {
+  width: 1px;
+  height: 22px;
+  margin: 0 4px;
+  border: 0;
+  background: rgb(255 255 255 / 0.22);
+}
+
+/* ---------- menu ---------- */
+
+.vitre-menu {
+  --vitre-bezel: 26;
+  --vitre-blur: 4;
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  padding: 6px;
+  border-radius: 26px;
+}
+
+.vitre-menu > :is([role^='menuitem'], button, a) {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 20px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 15px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.vitre-menu > :is([role^='menuitem'], button, a) > svg {
+  width: 18px;
+  height: 18px;
+  opacity: 0.8;
+}
+
+.vitre-menu > hr {
+  height: 1px;
+  margin: 4px 12px;
+  border: 0;
+  background: rgb(255 255 255 / 0.16);
+}
+
+.vitre-menu .vitre-droplet {
+  border-radius: 20px;
+  --vitre-tint: rgb(255 255 255 / 0.12);
+}
+
+/* ---------- switch ---------- */
+
+.vitre-switch {
+  --vitre-track-w: 64px;
+  --vitre-track-h: 28px;
+  --vitre-thumb-w: 38px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* a native checkbox until the script builds the track */
+.vitre-switch > input {
+  accent-color: var(--vitre-on);
+}
+
+.vitre-switch:has(> .vitre-switch__track) > input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.vitre-switch__track {
+  position: relative;
+  flex: none;
+  width: var(--vitre-track-w);
+  height: var(--vitre-track-h);
+  border-radius: 999px;
+  background: rgb(120 120 128 / 0.34);
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.2);
+  transition: background-color 0.3s;
+}
+
+.vitre-switch > input:checked + .vitre-switch__track {
+  background: var(--vitre-on);
+}
+
+.vitre-switch > input:focus-visible + .vitre-switch__track {
+  outline: 2px solid color-mix(in oklab, var(--vitre-accent) 80%, white);
+  outline-offset: 3px;
+}
+
+.vitre-switch__thumb {
+  --vitre-pos: 0;
+  --vitre-bezel: 9;
+  --vitre-blur: 0;
+  --vitre-dispersion: 0.9;
+  --vitre-shadow: 0 3px 8px -2px rgb(0 0 0 / 0.3);
+  position: absolute;
+  top: 2px;
+  left: calc(2px + var(--vitre-pos) * (100% - 4px - var(--vitre-thumb-w)));
+  width: var(--vitre-thumb-w);
+  height: calc(var(--vitre-track-h) - 4px);
+  border-radius: 999px;
+  background-color: #fff;
+  transition:
+    left var(--vitre-ease-time) var(--vitre-ease),
+    width var(--vitre-ease-time) var(--vitre-ease),
+    transform var(--vitre-spring-time) var(--vitre-spring),
+    background-color 0.25s;
+}
+
+.vitre-switch > input:checked + .vitre-switch__track > .vitre-switch__thumb {
+  --vitre-pos: 1;
+}
+
+/* held: the thumb swells past the track into a clear lens */
+.vitre-switch[data-lifted] {
+  --vitre-thumb-w: 46px;
+}
+.vitre-switch[data-lifted] .vitre-switch__thumb {
+  --vitre-magnify: 1.25;
+  --vitre-shadow: 0 6px 14px -4px rgb(0 0 0 / 0.35);
+  background-color: rgb(255 255 255 / 0.02);
+  transform: scale(1.18, 1.36);
+  transition:
+    left var(--vitre-ease-time) var(--vitre-ease),
+    width 0.3s ease-out,
+    transform 0.3s ease-out,
+    background-color 0.2s;
+}
+.vitre-switch[data-dragging] .vitre-switch__thumb {
+  transition:
+    width 0.3s ease-out,
+    transform 0.3s ease-out,
+    background-color 0.2s;
+}
+
+.vitre-switch > input:disabled ~ * {
+  opacity: 0.45;
+}
+
+/* ---------- slider ---------- */
+
+.vitre-slider {
+  --vitre-value: 0.5;
+  --vitre-thumb-w: 38px;
+  --vitre-thumb-h: 24px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 140px;
+  height: 32px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.vitre-slider__track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6px;
+  border-radius: 99px;
+  background: rgb(255 255 255 / 0.22);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.2);
+  overflow: hidden;
+}
+
+.vitre-slider__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--vitre-thumb-w) / 2 + var(--vitre-value) * (100% - var(--vitre-thumb-w)));
+  background: var(--vitre-accent);
+}
+
+.vitre-slider__thumb {
+  --vitre-bezel: 9;
+  --vitre-blur: 0;
+  --vitre-dispersion: 0.9;
+  --vitre-shadow: 0 3px 8px -2px rgb(0 0 0 / 0.32);
+  position: absolute;
+  top: 50%;
+  left: calc(var(--vitre-value) * (100% - var(--vitre-thumb-w)));
+  width: var(--vitre-thumb-w);
+  height: var(--vitre-thumb-h);
+  margin-top: calc(var(--vitre-thumb-h) / -2);
+  border-radius: 999px;
+  background-color: #fff;
+  pointer-events: none;
+  transition:
+    transform var(--vitre-spring-time) var(--vitre-spring),
+    background-color 0.25s;
+}
+
+.vitre-slider[data-lifted] .vitre-slider__thumb {
+  --vitre-magnify: 1.5;
+  background-color: rgb(255 255 255 / 0.05);
+  transform: scale(1.45, 1.6);
+  transition:
+    transform 0.25s ease-out,
+    background-color 0.2s;
+}
+
+/* a native range until the script builds the track; then it stays on top, invisible, and does the work */
+.vitre-slider > input {
+  width: 100%;
+  accent-color: var(--vitre-accent);
+}
+
+.vitre-slider:has(> .vitre-slider__thumb) > input {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background: none;
+}
+
+.vitre-slider:has(> .vitre-slider__thumb) > input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--vitre-thumb-w);
+  height: var(--vitre-thumb-h);
+}
+
+.vitre-slider:has(> .vitre-slider__thumb) > input::-moz-range-thumb {
+  width: var(--vitre-thumb-w);
+  height: var(--vitre-thumb-h);
+  border: 0;
+}
+
+.vitre-slider:has(> input:focus-visible) .vitre-slider__thumb {
+  outline: 2px solid color-mix(in oklab, var(--vitre-accent) 80%, white);
+  outline-offset: 3px;
+}
+
+/* ---------- toast ---------- */
+
+.vitre-toasts {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  left: 50%;
+  z-index: 2147483000;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  translate: -50% 0;
+  pointer-events: none;
+}
+
+.vitre-toast {
+  --vitre-bezel: 16;
+  --vitre-blur: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font-size: 14.5px;
+  font-weight: 600;
+  pointer-events: auto;
+  cursor: pointer;
+  transition:
+    transform var(--vitre-spring-time) var(--vitre-spring),
+    opacity 0.35s;
+}
+
+.vitre-toast > svg {
+  width: 20px;
+  height: 20px;
+}
+
+@starting-style {
+  .vitre-toast {
+    transform: translateY(-140%) scale(0.5, 0.7);
+    opacity: 0;
+  }
+}
+
+.vitre-toast[data-leaving] {
+  transform: translateY(-90%) scale(0.8);
+  opacity: 0;
+  transition:
+    transform 0.4s ease-in,
+    opacity 0.3s;
+}
+
+/* ---------- sheet (on <dialog>) ---------- */
+
+dialog.vitre-sheet {
+  --vitre-bezel: 32;
+  --vitre-blur: 5;
+  width: min(440px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  margin: auto;
+  padding: 28px;
+  border: 0;
+  border-radius: 38px;
+  transition:
+    transform var(--vitre-spring-time) var(--vitre-spring),
+    opacity 0.3s,
+    overlay 0.4s allow-discrete,
+    display 0.4s allow-discrete;
+}
+
+dialog.vitre-sheet:not([open]) {
+  transform: translateY(40px) scale(0.92);
+  opacity: 0;
+  transition:
+    transform 0.3s ease-in,
+    opacity 0.25s,
+    overlay 0.3s allow-discrete,
+    display 0.3s allow-discrete;
+}
+
+@starting-style {
+  dialog.vitre-sheet[open] {
+    transform: translateY(60px) scale(0.85);
+    opacity: 0;
+  }
+}
+
+dialog.vitre-sheet::backdrop {
+  background: rgb(0 0 0 / 0.28);
+  transition:
+    background-color 0.3s,
+    overlay 0.3s allow-discrete,
+    display 0.3s allow-discrete;
+}
+
+@starting-style {
+  dialog.vitre-sheet[open]::backdrop {
+    background: rgb(0 0 0 / 0);
+  }
+}
+
+/* ---------- preferences ---------- */
+
+@media (prefers-reduced-transparency: reduce) {
+  :where(.vitre) {
+    --vitre-tint: rgb(28 30 40 / 0.88);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.vitre-button, .vitre-icon, .vitre-chip, [data-vitre-press], .vitre-toast, dialog.vitre-sheet) {
+    transition-duration: 0.01s !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :where(.vitre) {
+    border: 1px solid CanvasText;
+    backdrop-filter: none;
+  }
+}
