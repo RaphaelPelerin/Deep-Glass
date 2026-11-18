@@ -84,5 +84,14 @@ await page.mouse.move(700, 880);
 await wait(1400);
 await shot('components', await box('.board', 30));
 
+// the social preview (GitHub, link previews): 1280×640, the title under the loupe and the card
+await page.setViewport({ width: 1280, height: 640, deviceScaleFactor: 1 });
+await page.goto(url, { waitUntil: 'networkidle0' });
+await page.addStyleTag({ content: '.hero{min-height:640px;padding:70px 20px 60px;gap:16px}.hero .lead,.hero-actions,.pill,.dock{display:none}.lens{top:198px;left:560px}.lens span{visibility:hidden}' });
+await page.mouse.move(820, 300);
+await wait(4000);
+await page.screenshot({ path: join(out, 'og.jpg'), type: 'jpeg', quality: 90 });
+console.log('.github/assets/og.jpg');
+
 await browser.close();
 server.close();

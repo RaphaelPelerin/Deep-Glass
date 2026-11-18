@@ -155,7 +155,7 @@ Glass inside glass doesn't refract the page (a browser rule for nested backdrop 
 
 Glass is drawn by the GPU on every frame where it or what's behind it moves, so deep-glass keeps that work small:
 
-- **Tiny lens maps.** The browser redraws each displacement map on every frame, at a cost that grows with its size. The bending is smooth, so maps hold only about 8 pixels across the rim and the GPU stretches them: a button's map is about 2,000 pixels, a large card's about 8,000.
+- **Tiny lens maps.** The browser redraws each displacement map on every frame, at a cost that grows with its size. The bending is smooth, so maps hold only about 8 pixels across the rim and the GPU stretches them: a button's map is about 1,600 pixels, and a 420×530 card's is 12,000 instead of 117,000. Across the demo page that's 6 times fewer pixels to redraw on every frame.
 - **Fringes only where they show.** Color fringes take three passes instead of one, so they run only where they spread wider than a pixel, on clear glass.
 - **Light only where you are.** The pointer relights only the panes near it, with rounded values, and only when they change. Every box is read before anything is written.
 - **Nothing for what you can't see.** Resting switch and slider thumbs are opaque, so they get no lens until you hold them, and hidden drops aren't drawn. Maps are encoded off the main thread, and new lenses are built a few per frame.
