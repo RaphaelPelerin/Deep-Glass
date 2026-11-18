@@ -76,7 +76,10 @@ function updatePane(pane: Pane) {
         saturation: num(cs, '--dg-saturation', 1.7),
         brightness: num(cs, '--dg-brightness', 1.05),
       },
+      () => queue(pane),
     );
+    // its lens is being made: it keeps the one it has meanwhile, and comes back when it's ready
+    if (!next) return;
   }
   if (pane.key) release(pane.key);
   pane.key = next?.key ?? null;
@@ -89,10 +92,18 @@ function updatePane(pane: Pane) {
   }
 }
 
+/** main-thread time per frame for new lenses: the rest waits for the next frame, the page stays fluid */
+const BUDGET_MS = 6;
+
 function flush() {
   frame = 0;
-  for (const pane of queued) updatePane(pane);
-  queued.clear();
+  const end = performance.now() + BUDGET_MS;
+  for (const pane of queued) {
+    queued.delete(pane);
+    updatePane(pane);
+    if (performance.now() > end) break;
+  }
+  if (queued.size) frame = requestAnimationFrame(flush);
 }
 
 function queue(pane: Pane) {
@@ -104,6 +115,17 @@ function queue(pane: Pane) {
 export function refresh(el: HTMLElement): void {
   const pane = panes.get(el);
   if (pane) updatePane(pane);
+}
+
+/** panes whose settings changed while off screen: updated when they come into view */
+const stale = new Set<Pane>();
+
+/** re-reads every pane's settings: the visible ones now, a few per frame, the others when they show */
+export function refreshAll(): void {
+  for (const pane of panes.values()) {
+    if (onScreen.has(pane.el)) queue(pane);
+    else stale.add(pane);
+  }
 }
 
 const resizes = ResizeObserverLike((entries) => {
@@ -122,42 +144,74 @@ const resizes = ResizeObserverLike((entries) => {
 
 // ---------- light: highlights face the pointer, glare follows it ----------
 
+/*
+ * Every value written here repaints its pane, and a repainted pane runs its lens filter again:
+ * only the panes near the pointer are touched, with rounded values, and only when they change.
+ * All the boxes are read before anything is written, so the layout is computed once per frame.
+ */
+
 let pointer: { x: number; y: number } | null = null;
 let tilt: { x: number; y: number } | null = null;
+let tiltAt = 0;
 let lightFrame = 0;
+/** what each pane was last given */
+const shown = new WeakMap<HTMLElement, Record<string, string>>();
+
+function set(el: HTMLElement, values: Record<string, string>) {
+  const last = shown.get(el) ?? {};
+  for (const [k, v] of Object.entries(values)) {
+    if (last[k] === v) continue;
+    last[k] = v;
+    el.style.setProperty(k, v);
+  }
+  shown.set(el, last);
+}
+
+/** the light as CSS values: a direction (rounded so tiny moves change nothing) and its angle */
+function direction(lx: number, ly: number): Record<string, string> {
+  const step = Math.PI / 60;
+  const a = Math.round(Math.atan2(ly, lx) / step) * step;
+  return {
+    '--dg-lx': Math.cos(a).toFixed(2),
+    '--dg-ly': Math.sin(a).toFixed(2),
+    // a gradient pointing away from the light starts bright on the lit side
+    '--dg-angle': `${Math.round((Math.atan2(-Math.cos(a), Math.sin(a)) * 180) / Math.PI)}deg`,
+  };
+}
 
 function lightUp() {
   lightFrame = 0;
-  for (const el of onScreen) {
-    const r = el.getBoundingClientRect();
-    const cx = r.left + r.width / 2;
-    const cy = r.top + r.height / 2;
-    let lx: number;
-    let ly: number;
-    let near = 0;
-    if (pointer) {
-      lx = pointer.x - cx;
-      ly = pointer.y - cy;
-      // 1 over the pane, fading out within a pane size around it
-      const gap = Math.hypot(
-        Math.max(r.left - pointer.x, 0, pointer.x - r.right),
-        Math.max(r.top - pointer.y, 0, pointer.y - r.bottom),
-      );
-      near = Math.max(0, 1 - gap / Math.max(120, Math.min(r.width, r.height)));
-      el.style.setProperty('--dg-mx', `${(pointer.x - r.left).toFixed(1)}px`);
-      el.style.setProperty('--dg-my', `${(pointer.y - r.top).toFixed(1)}px`);
-    } else if (tilt) {
-      lx = tilt.x;
-      ly = tilt.y;
-    } else continue;
-    const l = Math.hypot(lx, ly) || 1;
-    lx /= l;
-    ly /= l;
-    el.style.setProperty('--dg-lx', lx.toFixed(3));
-    el.style.setProperty('--dg-ly', ly.toFixed(3));
-    // a gradient pointing away from the light starts bright on the lit side
-    el.style.setProperty('--dg-angle', `${((Math.atan2(-lx, ly) * 180) / Math.PI).toFixed(1)}deg`);
-    el.style.setProperty('--dg-near', near.toFixed(3));
+  const els = [...onScreen];
+  const boxes = els.map((el) => el.getBoundingClientRect());
+  for (let i = 0; i < els.length; i++) {
+    const el = els[i];
+    const r = boxes[i];
+    if (tilt && !pointer) {
+      set(el, direction(tilt.x, tilt.y));
+      continue;
+    }
+    const was = shown.get(el)?.['--dg-near'];
+    if (!pointer) {
+      if (was && was !== '0') set(el, { '--dg-near': '0' });
+      continue;
+    }
+    // 1 over the pane, fading out within a pane size around it
+    const gap = Math.hypot(
+      Math.max(r.left - pointer.x, 0, pointer.x - r.right),
+      Math.max(r.top - pointer.y, 0, pointer.y - r.bottom),
+    );
+    const near = Math.max(0, 1 - gap / Math.max(120, Math.min(r.width, r.height)));
+    if (near <= 0) {
+      // out of reach: keeps the light it had, the glare fades once
+      if (was && was !== '0') set(el, { '--dg-near': '0' });
+      continue;
+    }
+    set(el, {
+      ...direction(pointer.x - (r.left + r.width / 2), pointer.y - (r.top + r.height / 2)),
+      '--dg-near': (Math.round(near * 20) / 20).toString(),
+      '--dg-mx': `${Math.round(pointer.x - r.left)}px`,
+      '--dg-my': `${Math.round(pointer.y - r.top)}px`,
+    });
   }
 }
 
@@ -172,26 +226,43 @@ const onPointerMove = (e: PointerEvent) => {
 };
 const onPointerLeave = () => {
   pointer = null;
-  for (const el of onScreen) el.style.setProperty('--dg-near', '0');
+  relight();
 };
-// phones: tilting the device moves the light (where the browser allows it without asking)
+// phones: tilting the device moves the light (where the browser allows it without asking), 10 times a second
 const onTilt = (e: DeviceOrientationEvent) => {
-  if (pointer || e.gamma === null || e.beta === null) return;
+  if (pointer || e.gamma === null || e.beta === null || e.timeStamp - tiltAt < 100) return;
+  tiltAt = e.timeStamp;
   tilt = { x: -e.gamma / 45, y: -(e.beta - 40) / 45 - 0.4 };
   relight();
 };
 
 const visibility = IntersectionObserverLike((entries) => {
   for (const e of entries) {
-    if (e.isIntersecting) onScreen.add(e.target as HTMLElement);
-    else onScreen.delete(e.target as HTMLElement);
+    const el = e.target as HTMLElement;
+    if (!e.isIntersecting) {
+      onScreen.delete(el);
+      continue;
+    }
+    onScreen.add(el);
+    const pane = panes.get(el);
+    if (pane && stale.delete(pane)) queue(pane);
   }
   relight();
 });
 
 // ---------- press: squish, follow the finger like a drop of liquid, spring back ----------
 
-let pressed: { el: HTMLElement; id: number; cx: number; cy: number; w: number; h: number } | null = null;
+let pressed: {
+  el: HTMLElement;
+  id: number;
+  left: number;
+  top: number;
+  w: number;
+  h: number;
+  x: number;
+  y: number;
+  frame: number;
+} | null = null;
 
 /** the further the pull, the harder it gets: like stretching something elastic */
 const rubber = (d: number, size: number) => (d * 0.16) / (1 + Math.abs(d) / (size * 1.5));
@@ -200,37 +271,51 @@ function onPointerDown(e: PointerEvent) {
   const el = (e.target as Element | null)?.closest?.(PRESSABLE) as HTMLElement | null;
   if (!el || el.matches(':disabled, [aria-disabled="true"]')) return;
   const r = el.getBoundingClientRect();
-  pressed = { el, id: e.pointerId, cx: r.left + r.width / 2, cy: r.top + r.height / 2, w: r.width, h: r.height };
+  pressed = { el, id: e.pointerId, left: r.left, top: r.top, w: r.width, h: r.height, x: e.clientX, y: e.clientY, frame: 0 };
   el.dataset.pressed = '';
-  el.style.setProperty('--dg-mx', `${(e.clientX - r.left).toFixed(1)}px`);
-  el.style.setProperty('--dg-my', `${(e.clientY - r.top).toFixed(1)}px`);
+  set(el, { '--dg-mx': `${Math.round(e.clientX - r.left)}px`, '--dg-my': `${Math.round(e.clientY - r.top)}px` });
   addEventListener('pointermove', onPressMove, { passive: true });
   addEventListener('pointerup', onPressEnd);
   addEventListener('pointercancel', onPressEnd);
 }
 
-function onPressMove(e: PointerEvent) {
-  if (!pressed || e.pointerId !== pressed.id || prefersReducedMotion()) return;
-  const { el, cx, cy, w, h } = pressed;
-  const px = rubber(e.clientX - cx, w);
-  const py = rubber(e.clientY - cy, h);
-  el.style.setProperty('--dg-pull-x', `${px.toFixed(2)}px`);
-  el.style.setProperty('--dg-pull-y', `${py.toFixed(2)}px`);
+/** the pull follows the pointer once per frame, from the box measured at the press: no layout reads */
+function pull() {
+  if (!pressed) return;
+  pressed.frame = 0;
+  const { el, left, top, w, h, x, y } = pressed;
+  const px = rubber(x - (left + w / 2), w);
+  const py = rubber(y - (top + h / 2), h);
   // stretched along the pull, thinner across it
   const sx = 1 + (Math.abs(px) / w) * 1.2 - (Math.abs(py) / h) * 0.5;
   const sy = 1 + (Math.abs(py) / h) * 1.2 - (Math.abs(px) / w) * 0.5;
-  el.style.setProperty('--dg-sx', sx.toFixed(4));
-  el.style.setProperty('--dg-sy', sy.toFixed(4));
-  const r = el.getBoundingClientRect();
-  el.style.setProperty('--dg-mx', `${(e.clientX - r.left).toFixed(1)}px`);
-  el.style.setProperty('--dg-my', `${(e.clientY - r.top).toFixed(1)}px`);
+  set(el, {
+    '--dg-pull-x': `${px.toFixed(1)}px`,
+    '--dg-pull-y': `${py.toFixed(1)}px`,
+    '--dg-sx': sx.toFixed(3),
+    '--dg-sy': sy.toFixed(3),
+    '--dg-mx': `${Math.round(x - left - px)}px`,
+    '--dg-my': `${Math.round(y - top - py)}px`,
+  });
+}
+
+function onPressMove(e: PointerEvent) {
+  if (!pressed || e.pointerId !== pressed.id || prefersReducedMotion()) return;
+  pressed.x = e.clientX;
+  pressed.y = e.clientY;
+  pressed.frame ||= requestAnimationFrame(pull);
 }
 
 function onPressEnd(e: PointerEvent) {
   if (!pressed || e.pointerId !== pressed.id) return;
-  const { el } = pressed;
+  const { el, frame } = pressed;
+  cancelAnimationFrame(frame);
   delete el.dataset.pressed;
-  for (const p of ['--dg-pull-x', '--dg-pull-y', '--dg-sx', '--dg-sy']) el.style.removeProperty(p);
+  const last = shown.get(el);
+  for (const p of ['--dg-pull-x', '--dg-pull-y', '--dg-sx', '--dg-sy']) {
+    el.style.removeProperty(p);
+    if (last) delete last[p];
+  }
   pressed = null;
   removeEventListener('pointermove', onPressMove);
   removeEventListener('pointerup', onPressEnd);
@@ -260,6 +345,7 @@ function detach(el: HTMLElement) {
   if (pane) {
     if (pane.key) release(pane.key);
     queued.delete(pane);
+    stale.delete(pane);
     resizes.unobserve(el);
     panes.delete(el);
   }
@@ -322,12 +408,6 @@ export function start(root: ParentNode, opts: RuntimeOptions): void {
   }
   scan(root);
   for (const pane of panes.values()) queue(pane);
-}
-
-export function rescan(): void {
-  for (const root of roots) scan(root);
-  for (const pane of panes.values()) queue(pane);
-  relight();
 }
 
 export function stop(): void {

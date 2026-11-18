@@ -92,6 +92,9 @@ export function lensMap(shape: LensShape, resolution = 1): LensMap {
   const turn = Math.min(Math.max(radius, bezel * 1.6), hw, hh);
   // a loupe samples closer to the center
   const zoom = 1 - 1 / Math.max(1, shape.magnify);
+  // without a loupe, the flat middle stays still: no need to look at it
+  const flatX = hw - Math.max(bezel, radius);
+  const flatY = hh - Math.max(bezel, radius);
 
   const ox = new Float32Array(width * height);
   const oy = new Float32Array(width * height);
@@ -100,13 +103,17 @@ export function lensMap(shape: LensShape, resolution = 1): LensMap {
     const y = (j + 0.5) / resolution - hh;
     for (let i = 0; i < width; i++, k++) {
       const x = (i + 0.5) / resolution - hw;
+      const ax = Math.abs(x);
+      const ay = Math.abs(y);
+      if (!zoom && ((ax < flatX && ay < hh - bezel) || (ay < flatY && ax < hw - bezel))) continue;
       // signed distance to the rounded rectangle (negative inside)
       const qx = Math.abs(x) - hw + radius;
       const qy = Math.abs(y) - hh + radius;
       const d =
         qx > 0 && qy > 0 ? Math.hypot(qx, qy) - radius : Math.max(qx, qy) - radius;
-      const depth = -d;
-      if (depth <= 0) continue;
+      // just outside the outline (clipped away anyway), the edge's own bending carries on: a coarse
+      // map, stretched smoothly, then keeps a full-strength, unbroken rim
+      const depth = Math.max(0, -d);
       // the direction of the bending: outward, around the rounder corner
       const tx = Math.abs(x) - hw + turn;
       const ty = Math.abs(y) - hh + turn;

@@ -13,5 +13,6 @@ export function canRefract(): boolean {
   return /\bChrome\/\d+/.test(navigator.userAgent) && !/\b(CriOS|EdgiOS|FxiOS)\b/.test(navigator.userAgent);
 }
 
-export const prefersReducedMotion = (): boolean =>
-  typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reducedMotion = typeof matchMedia === 'undefined' ? null : matchMedia('(prefers-reduced-motion: reduce)');
+
+export const prefersReducedMotion = (): boolean => !!reducedMotion?.matches;

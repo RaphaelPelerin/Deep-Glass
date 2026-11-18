@@ -11,19 +11,38 @@ export interface Optics {
 }
 
 const NS = 'http://www.w3.org/2000/svg';
-/** the largest side of a map, in pixels: bigger panes get a smoother, scaled up map */
-const MAX_MAP = 512;
+/**
+ * Map pixels across the rim. The browser draws every map on every frame the glass moves or its
+ * backdrop changes, at a cost that grows with its size; the field is smooth, and the GPU stretches
+ * it with bilinear filtering, so a few pixels across the rim are all it needs.
+ */
+const MAP_PX_PER_RIM = 8;
+/** and never more than this on a side */
+const MAX_MAP = 256;
+/** fringes are 3 passes instead of 1: only where they show, on clear glass (frosting hides them) */
+const FRINGES_UP_TO_BLUR = 3;
+/** lenses no pane uses any more stay ready for a while (a thumb let go, a drop at rest…) */
+const SPARE = 40;
 
 interface Filter {
   id: string;
   node: SVGFilterElement;
+  map: string;
+  uses: number;
+}
+
+interface Map_ {
+  url: string;
+  scale: number;
   uses: number;
 }
 
 let host: SVGSVGElement | null = null;
-let canvas: HTMLCanvasElement | null = null;
 let next = 0;
 const filters = new Map<string, Filter>();
+const maps = new Map<string, Map_>();
+/** maps being made, and who waits for them */
+const pending = new Map<string, Set<() => void>>();
 
 function make<K extends keyof SVGElementTagNameMap>(
   tag: K,
@@ -46,12 +65,43 @@ function mount(): SVGSVGElement {
   return host;
 }
 
-function encode(width: number, height: number, data: Uint8ClampedArray): string {
-  canvas ??= document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  canvas.getContext('2d')!.putImageData(new ImageData(data as Uint8ClampedArray<ArrayBuffer>, width, height), 0, 0);
-  return canvas.toDataURL();
+/**
+ * Makes a lens's displacement map, then calls `ready`. The image is encoded off the main thread
+ * (toBlob), so a page full of glass, or a setting dragged live, never stalls a frame.
+ */
+function makeMap(key: string, shape: LensShape, ready: () => void) {
+  const waiting = pending.get(key);
+  if (waiting) {
+    waiting.add(ready);
+    return;
+  }
+  const all = new Set([ready]);
+  pending.set(key, all);
+  const m = lensMap(
+    shape,
+    Math.min(1, MAP_PX_PER_RIM / Math.max(1, shape.bezel), MAX_MAP / Math.max(shape.width, shape.height)),
+  );
+  const canvas = document.createElement('canvas');
+  canvas.width = m.width;
+  canvas.height = m.height;
+  canvas.getContext('2d')!.putImageData(new ImageData(m.data, m.width, m.height), 0, 0);
+  const done = (url: string) => {
+    maps.set(key, { url, scale: m.scale, uses: 0 });
+    pending.delete(key);
+    for (const f of all) f();
+  };
+  if (typeof canvas.toBlob === 'function') {
+    canvas.toBlob((blob) => done(blob ? URL.createObjectURL(blob) : canvas.toDataURL()));
+  } else {
+    done(canvas.toDataURL());
+  }
+}
+
+function dropMap(key: string) {
+  const map = maps.get(key);
+  if (!map || --map.uses > 0) return;
+  maps.delete(key);
+  if (map.url.startsWith('blob:')) URL.revokeObjectURL(map.url);
 }
 
 /** keeps one color channel */
@@ -61,9 +111,18 @@ const CHANNELS = [
   '0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0',
 ];
 
-function build(id: string, shape: LensShape, optics: Optics): SVGFilterElement {
+/** saturation then brightness, as one color matrix */
+function tone(s: number, b: number): string {
+  const rows = [
+    [0.213 + 0.787 * s, 0.715 - 0.715 * s, 0.072 - 0.072 * s],
+    [0.213 - 0.213 * s, 0.715 + 0.285 * s, 0.072 - 0.072 * s],
+    [0.213 - 0.213 * s, 0.715 - 0.715 * s, 0.072 + 0.928 * s],
+  ];
+  return [...rows.map((r) => [...r.map((v) => +(v * b).toFixed(4)), 0, 0]), [0, 0, 0, 1, 0]].flat().join(' ');
+}
+
+function build(id: string, shape: LensShape, map: Map_, optics: Optics): SVGFilterElement {
   const { width: w, height: h } = shape;
-  const map = lensMap(shape, Math.min(1, MAX_MAP / Math.max(w, h)));
   const f = make('filter', {
     id,
     x: 0,
@@ -80,12 +139,13 @@ function build(id: string, shape: LensShape, optics: Optics): SVGFilterElement {
     make('feGaussianBlur', { in: src, stdDeviation: optics.blur, edgeMode: 'duplicate', result: 'frost' }, f);
     src = 'frost';
   }
-  make('feImage', { href: encode(map.width, map.height, map.data), x: 0, y: 0, width: w, height: h, preserveAspectRatio: 'none', result: 'lens' }, f);
+  make('feImage', { href: map.url, x: 0, y: 0, width: w, height: h, preserveAspectRatio: 'none', result: 'lens' }, f);
   const shift = (scale: number, result: string) =>
     make('feDisplacementMap', { in: src, in2: 'lens', scale, xChannelSelector: 'R', yChannelSelector: 'G', result }, f);
-  if (optics.dispersion > 0) {
-    // red bends a little less than green, blue a little more: fringes where the rim is steep
-    const spread = Math.min(1, optics.dispersion) * 0.14;
+  // red bends a little less than green, blue a little more: fringes where the rim is steep. They
+  // cost 3 passes instead of 1, so only where they show: wider than a pixel, on clear glass
+  const spread = Math.min(1, optics.dispersion) * 0.14;
+  if ((map.scale / 2) * spread >= 1 && optics.blur < FRINGES_UP_TO_BLUR) {
     [1 - spread, 1, 1 + spread].forEach((k, i) => {
       shift(map.scale * k, `bent${i}`);
       make('feColorMatrix', { in: `bent${i}`, type: 'matrix', values: CHANNELS[i], result: `ch${i}` }, f);
@@ -95,18 +155,30 @@ function build(id: string, shape: LensShape, optics: Optics): SVGFilterElement {
   } else {
     shift(map.scale, 'bent');
   }
-  make('feColorMatrix', { in: 'bent', type: 'saturate', values: optics.saturation, result: 'vivid' }, f);
-  if (optics.brightness !== 1) {
-    const transfer = make('feComponentTransfer', { in: 'vivid' }, f);
-    for (const c of ['R', 'G', 'B'] as const) make(`feFunc${c}`, { type: 'linear', slope: optics.brightness }, transfer);
+  if (optics.saturation !== 1 || optics.brightness !== 1) {
+    make('feColorMatrix', { in: 'bent', type: 'matrix', values: tone(optics.saturation, optics.brightness) }, f);
   }
   return f;
 }
 
 const round = (v: number, step: number) => Math.round(v / step) * step;
 
-/** a filter for this lens: shared by every pane of the same shape. Returns its key. */
-export function acquire(shape: LensShape, optics: Optics): { key: string; id: string } {
+/** drops the oldest unused lenses beyond the spare ones */
+function prune() {
+  let spare = 0;
+  for (const [key, f] of [...filters].reverse()) {
+    if (f.uses > 0 || ++spare <= SPARE) continue;
+    f.node.remove();
+    filters.delete(key);
+    dropMap(f.map);
+  }
+}
+
+/**
+ * A filter for this lens, shared by every pane of the same shape and optics. Null while its map is
+ * being made: `ready` is called once it can be asked again (the pane keeps its previous look).
+ */
+export function acquire(shape: LensShape, optics: Optics, ready: () => void): { key: string; id: string } | null {
   const lens: LensShape = {
     width: Math.max(1, Math.round(shape.width)),
     height: Math.max(1, Math.round(shape.height)),
@@ -124,9 +196,20 @@ export function acquire(shape: LensShape, optics: Optics): { key: string; id: st
   };
   const key = JSON.stringify([lens, o]);
   let f = filters.get(key);
-  if (!f) {
+  if (f) {
+    // most recently used last
+    filters.delete(key);
+    filters.set(key, f);
+  } else {
+    const mapKey = JSON.stringify(lens);
+    const map = maps.get(mapKey);
+    if (!map) {
+      makeMap(mapKey, lens, ready);
+      return null;
+    }
+    map.uses++;
     const id = `dg-${++next}`;
-    f = { id, node: build(id, lens, o), uses: 0 };
+    f = { id, node: build(id, lens, map, o), map: mapKey, uses: 0 };
     filters.set(key, f);
     mount().append(f.node);
   }
@@ -136,9 +219,9 @@ export function acquire(shape: LensShape, optics: Optics): { key: string; id: st
 
 export function release(key: string): void {
   const f = filters.get(key);
-  if (!f || --f.uses > 0) return;
-  f.node.remove();
-  filters.delete(key);
+  if (!f) return;
+  f.uses = Math.max(0, f.uses - 1);
+  if (f.uses === 0) prune();
 }
 
 /** how many filters exist (for tests and stats) */

@@ -1,5 +1,5 @@
 import { installControls } from './controls';
-import { refracting, refresh, rescan, start, stop } from './runtime';
+import { refracting, refresh, refreshAll, start, stop } from './runtime';
 
 export interface DeepGlassOptions {
   /** where to look for glass (default: the whole document) */
@@ -40,7 +40,7 @@ export function deepGlass(options: DeepGlassOptions = {}): DeepGlassInstance {
     get refraction() {
       return refracting();
     },
-    refresh: (el) => (el ? refresh(el) : rescan()),
+    refresh: (el) => (el ? refresh(el) : refreshAll()),
     destroy: stop,
   };
 }

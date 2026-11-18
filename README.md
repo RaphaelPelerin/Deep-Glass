@@ -3,7 +3,7 @@
 **Liquid glass for the web.** UI components that refract what is behind them through a curved rim, split it into colors at the edges, catch the light where your pointer is, and stretch like a drop when you press them.
 
 [![npm](https://img.shields.io/npm/v/deep-glass?color=8ab4ff)](https://www.npmjs.com/package/deep-glass)
-[![gzip](https://img.shields.io/badge/gzip-7%20kB%20js%20%2B%204%20kB%20css-8ab4ff)](#size)
+[![gzip](https://img.shields.io/badge/gzip-8%20kB%20js%20%2B%204%20kB%20css-8ab4ff)](#size)
 [![license](https://img.shields.io/badge/license-MIT-8ab4ff)](LICENSE)
 
 | ![A glass card](.github/assets/card.webp) | ![A loupe over a title](.github/assets/loupe.webp) |
@@ -151,9 +151,20 @@ Real refraction needs SVG filters in `backdrop-filter`, which only Chromium rend
 
 Glass inside glass doesn't refract the page (a browser rule for nested backdrop filters, and Apple's guidance too): that's what `dg-tile` is for inside cards. The drops of segmented controls and tab bars do bend what is under them: the labels.
 
+## Performance
+
+Glass is drawn by the GPU on every frame where it or what's behind it moves, so deep-glass keeps that work small:
+
+- **Tiny lens maps.** The browser redraws each displacement map on every frame, at a cost that grows with its size. The bending is smooth, so maps hold only about 8 pixels across the rim and the GPU stretches them: a button's map is about 2,000 pixels, a large card's about 8,000.
+- **Fringes only where they show.** Color fringes take three passes instead of one, so they run only where they spread wider than a pixel, on clear glass.
+- **Light only where you are.** The pointer relights only the panes near it, with rounded values, and only when they change. Every box is read before anything is written.
+- **Nothing for what you can't see.** Resting switch and slider thumbs are opaque, so they get no lens until you hold them, and hidden drops aren't drawn. Maps are encoded off the main thread, and new lenses are built a few per frame.
+
+On the demo page, 28 refracting panes scroll at about 80% of the frame rate of the same page with no glass at all.
+
 ## Size
 
-About 7 kB of JavaScript and 4 kB of CSS, gzipped. No dependencies.
+About 8 kB of JavaScript and 4 kB of CSS, gzipped. No dependencies.
 
 ## Pairs well with
 

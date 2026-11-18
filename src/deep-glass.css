@@ -421,11 +421,18 @@ button.dg-tile {
   will-change: transform;
   transition:
     opacity 0.25s,
-    background-color 0.3s;
+    background-color 0.3s,
+    visibility 0s;
 }
 
+/* faded out, then not drawn at all: no lens to compute */
 .dg-droplet[data-hidden] {
   opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.25s,
+    background-color 0.3s,
+    visibility 0s 0.25s;
 }
 
 /* held: a clear lens, magnifying what it passes over */
@@ -667,6 +674,8 @@ button.dg-tile {
 
 .dg-switch__thumb {
   --dg-pos: 0;
+  /* opaque at rest: no lens until it is held */
+  --dg-refraction: 0;
   --dg-bezel: 9;
   --dg-blur: 0;
   --dg-dispersion: 0.9;
@@ -678,6 +687,8 @@ button.dg-tile {
   height: calc(var(--dg-track-h) - 4px);
   border-radius: 999px;
   background-color: #fff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   transition:
     left var(--dg-ease-time) var(--dg-ease),
     width var(--dg-ease-time) var(--dg-ease),
@@ -694,7 +705,10 @@ button.dg-tile {
   --dg-thumb-w: 46px;
 }
 .dg-switch[data-lifted] .dg-switch__thumb {
+  --dg-refraction: inherit;
   --dg-magnify: 1.25;
+  backdrop-filter: var(--dg-filter, blur(10px) saturate(var(--dg-saturation)));
+  -webkit-backdrop-filter: blur(10px) saturate(var(--dg-saturation));
   --dg-shadow: 0 6px 14px -4px rgb(0 0 0 / 0.35);
   background-color: rgb(255 255 255 / 0.02);
   transform: scale(1.18, 1.36);
@@ -748,6 +762,8 @@ button.dg-tile {
 }
 
 .dg-slider__thumb {
+  /* opaque at rest: no lens until it is held */
+  --dg-refraction: 0;
   --dg-bezel: 9;
   --dg-blur: 0;
   --dg-dispersion: 0.9;
@@ -760,6 +776,8 @@ button.dg-tile {
   margin-top: calc(var(--dg-thumb-h) / -2);
   border-radius: 999px;
   background-color: #fff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   pointer-events: none;
   transition:
     transform var(--dg-spring-time) var(--dg-spring),
@@ -767,7 +785,10 @@ button.dg-tile {
 }
 
 .dg-slider[data-lifted] .dg-slider__thumb {
+  --dg-refraction: inherit;
   --dg-magnify: 1.5;
+  backdrop-filter: var(--dg-filter, blur(10px) saturate(var(--dg-saturation)));
+  -webkit-backdrop-filter: blur(10px) saturate(var(--dg-saturation));
   background-color: rgb(255 255 255 / 0.05);
   transform: scale(1.45, 1.6);
   transition:
