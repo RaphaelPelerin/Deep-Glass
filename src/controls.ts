@@ -21,7 +21,7 @@ function boxOf(item: Element, root: HTMLElement): Box {
   return { x: r.left - o.left - root.clientLeft, y: r.top - o.top - root.clientTop, w: r.width, h: r.height };
 }
 
-/** an under-damped spring: it overshoots a little and settles, like a drop of liquid */
+/** an under-damped spring: it overshoots a little and settles, like a drop of water */
 class Spring {
   v = 0;
   constructor(
@@ -145,7 +145,7 @@ export class Droplet {
   private render() {
     const { w: bw, h: bh } = this.base;
     if (!bw || !bh) return;
-    // longer along the motion and thinner across it: the faster, the more liquid
+    // longer along the motion and thinner across it: the faster, the softer
     const vx = this.px.v + this.pw.v / 2;
     const vy = this.py.v + this.ph.v / 2;
     const stretch = Math.min(0.32, Math.hypot(vx, vy) / 2400);

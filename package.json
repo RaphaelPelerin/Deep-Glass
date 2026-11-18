@@ -1,9 +1,9 @@
 {
   "name": "deep-glass",
   "version": "0.1.0",
-  "description": "Liquid glass for the web: UI components that refract, bend and light up what is behind them. Real lens refraction with color fringes, specular rims and springy touch.",
+  "description": "Deep glass for the web: UI components that refract, bend and light up what is behind them. Real lens refraction with color fringes, specular rims and springy touch.",
   "keywords": [
-    "liquid-glass",
+    "deep-glass",
     "glass",
     "glassmorphism",
     "refraction",

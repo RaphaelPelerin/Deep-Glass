@@ -1,6 +1,6 @@
 # deep-glass
 
-**Liquid glass for the web.** UI components that refract what is behind them through a curved rim, split it into colors at the edges, catch the light where your pointer is, and stretch like a drop when you press them.
+**Deep glass for the web.** UI components that refract what is behind them through a curved rim, split it into colors at the edges, catch the light where your pointer is, and stretch like a drop when you press them.
 
 [![npm](https://img.shields.io/npm/v/deep-glass?color=8ab4ff)](https://www.npmjs.com/package/deep-glass)
 [![gzip](https://img.shields.io/badge/gzip-8%20kB%20js%20%2B%204%20kB%20css-8ab4ff)](#size)
@@ -17,7 +17,7 @@ Not a blur. Each pane is a slab of glass: each pixel of its rim is traced throug
 - **Real refraction**, from a physical model of the rim: no mirrored copies, no seams at the corners.
 - **Color fringes** along the rim, where the glass is steepest.
 - **Light that follows you**: the rim lights up on the side facing the pointer (or with the tilt of the phone, where the browser allows it), and a soft glare follows it.
-- **Liquid touch**: buttons swell, glow where you touch them, stretch towards your finger and spring back. Selections are glass drops that slide, stretch with their speed, and turn into a magnifying lens when you grab them.
+- **Springy touch**: buttons swell, glow where you touch them, stretch towards your finger and spring back. Selections are glass drops that slide, stretch with their speed, and turn into a magnifying lens when you grab them.
 - **Everything an interface needs**: buttons, icon buttons, chips, cards, tiles, text fields, switches, sliders, segmented controls, tab bars, toolbars, menus, toasts and sheets.
 - **Plain HTML and CSS classes**: works with any framework, or none. Accessible roles, keyboard support, `prefers-reduced-motion`, `prefers-reduced-transparency` and forced colors.
 - **Graceful**: without the script, or in browsers that can't refract, it is frosted glass with the same rim, light and shadows.
@@ -149,7 +149,7 @@ lensMap(shape);                     // the displacement map itself, for your own
 
 Real refraction needs SVG filters in `backdrop-filter`, which only Chromium renders: Chrome, Edge, Opera, Brave, Arc, Samsung Internet. Safari and Firefox get frosted glass (blur and saturation) with the same rim, light, shadows and interactions. Without JavaScript, everything is styled and usable; the switches and sliders are native inputs.
 
-Glass inside glass doesn't refract the page (a browser rule for nested backdrop filters, and Apple's guidance too): that's what `dg-tile` is for inside cards. The drops of segmented controls and tab bars do bend what is under them: the labels.
+Glass inside glass doesn't refract the page (a browser rule for nested backdrop filters): that's what `dg-tile` is for inside cards. The drops of segmented controls and tab bars do bend what is under them: the labels.
 
 ## Performance
 

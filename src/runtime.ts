@@ -250,7 +250,7 @@ const visibility = IntersectionObserverLike((entries) => {
   relight();
 });
 
-// ---------- press: squish, follow the finger like a drop of liquid, spring back ----------
+// ---------- press: squish, follow the finger like a drop of water, spring back ----------
 
 let pressed: {
   el: HTMLElement;

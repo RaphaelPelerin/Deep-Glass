@@ -1,5 +1,5 @@
 /*
- * deep-glass: liquid glass for the web.
+ * deep-glass: deep glass for the web.
  *
  * `.dg` is the material. With the script, it refracts what is behind it (Chromium); without it,
  * or elsewhere, it is frosted glass with the same rim, highlights and shadows.
@@ -287,7 +287,7 @@
 
 /*
  * Etched glass inside a pane: nested backdrop filters only see their parent's content, so tiles
- * don't refract (Apple's guidance too: no glass on glass). Same rim and light, lighter tint.
+ * don't refract (no glass on glass). Same rim and light, lighter tint.
  */
 .dg-tile {
   position: relative;
