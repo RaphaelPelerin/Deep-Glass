@@ -7,11 +7,23 @@
  */
 
 :root {
+  /* the tone of the glass: clear by default, see "dark glass" below */
   --dg-text: #fff;
   --dg-tint: rgb(255 255 255 / 0.06);
+  --dg-shadow: 0 16px 40px -14px rgb(0 0 0 / 0.42), 0 3px 10px -4px rgb(0 0 0 / 0.22);
+  --dg-saturation: 1.7;
+  --dg-brightness: 1.05;
+  --dg-tone-frosted: rgb(255 255 255 / 0.1);
+  --dg-tone-strong: rgb(255 255 255 / 0.14);
+  --dg-tone-tile: rgb(255 255 255 / 0.07);
+  --dg-tone-track: rgb(120 120 128 / 0.34);
+  --dg-tone-rail: rgb(255 255 255 / 0.22);
+  --dg-tone-line: rgb(255 255 255 / 0.2);
+  --dg-tone-rim: 1;
+  --dg-tone-glare: 1;
+  --dg-tone-scrim: rgb(0 0 0 / 0.28);
   --dg-accent: #0a84ff;
   --dg-on: #34c759;
-  --dg-shadow: 0 16px 40px -14px rgb(0 0 0 / 0.42), 0 3px 10px -4px rgb(0 0 0 / 0.22);
   /* springs: a bouncy one for touch, a gentle one for layout */
   --dg-spring: linear(0, 0.066, 0.23, 0.445, 0.669, 0.873, 1.037, 1.151, 1.214, 1.234, 1.219, 1.18, 1.13, 1.078, 1.03, 0.992, 0.965, 0.95, 0.945, 0.949, 0.958, 0.969, 0.982, 0.993, 1.002, 1.008, 1.012, 1.013, 1.012, 1.01, 1.007, 1.004, 1.002, 1, 0.998, 0.997, 0.997, 0.997, 0.998, 0.998, 1);
   --dg-spring-time: 1.1s;
@@ -25,8 +37,6 @@
   --dg-refraction: 1; /* how strongly the rim bends, 0 = flat glass */
   --dg-ior: 1.5; /* index of refraction */
   --dg-dispersion: 0.5; /* color fringes along the rim, 0–1 */
-  --dg-saturation: 1.7;
-  --dg-brightness: 1.05;
   --dg-frost: 0; /* extra frosting for every pane, px */
 
   /* light: a unit vector towards it (the pointer when there is one), and how close it is */
@@ -34,6 +44,70 @@
   --dg-ly: -0.8;
   --dg-angle: 143deg;
   --dg-near: 0;
+}
+
+/*
+ * ---------- dark glass ----------
+ * Smoked glass: a darker tint, a dimmer backdrop, softer highlights, deeper shadows.
+ * data-dg-theme="dark" on any element (the <html> for the whole page), "auto" to follow the
+ * system, "light" to bring the clear tone back inside a dark part; .dg--dark for a single pane.
+ */
+
+[data-dg-theme='dark'],
+.dg--dark {
+  --dg-text: #f3f5ff;
+  --dg-tint: rgb(14 16 26 / 0.38);
+  --dg-shadow: 0 20px 48px -16px rgb(0 0 0 / 0.62), 0 4px 12px -4px rgb(0 0 0 / 0.36);
+  --dg-saturation: 1.45;
+  --dg-brightness: 0.84;
+  --dg-tone-frosted: rgb(14 16 26 / 0.52);
+  --dg-tone-strong: rgb(255 255 255 / 0.12);
+  --dg-tone-tile: rgb(255 255 255 / 0.05);
+  --dg-tone-track: rgb(255 255 255 / 0.16);
+  --dg-tone-rail: rgb(255 255 255 / 0.14);
+  --dg-tone-line: rgb(255 255 255 / 0.12);
+  --dg-tone-rim: 0.6;
+  --dg-tone-glare: 0.7;
+  --dg-tone-scrim: rgb(0 0 0 / 0.5);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-dg-theme='auto'] {
+    --dg-text: #f3f5ff;
+    --dg-tint: rgb(14 16 26 / 0.38);
+    --dg-shadow: 0 20px 48px -16px rgb(0 0 0 / 0.62), 0 4px 12px -4px rgb(0 0 0 / 0.36);
+    --dg-saturation: 1.45;
+    --dg-brightness: 0.84;
+    --dg-tone-frosted: rgb(14 16 26 / 0.52);
+    --dg-tone-strong: rgb(255 255 255 / 0.12);
+    --dg-tone-tile: rgb(255 255 255 / 0.05);
+    --dg-tone-track: rgb(255 255 255 / 0.16);
+    --dg-tone-rail: rgb(255 255 255 / 0.14);
+    --dg-tone-line: rgb(255 255 255 / 0.12);
+    --dg-tone-rim: 0.6;
+    --dg-tone-glare: 0.7;
+    --dg-tone-scrim: rgb(0 0 0 / 0.5);
+    color-scheme: dark;
+  }
+}
+
+[data-dg-theme='light'] {
+  --dg-text: #fff;
+  --dg-tint: rgb(255 255 255 / 0.06);
+  --dg-shadow: 0 16px 40px -14px rgb(0 0 0 / 0.42), 0 3px 10px -4px rgb(0 0 0 / 0.22);
+  --dg-saturation: 1.7;
+  --dg-brightness: 1.05;
+  --dg-tone-frosted: rgb(255 255 255 / 0.1);
+  --dg-tone-strong: rgb(255 255 255 / 0.14);
+  --dg-tone-tile: rgb(255 255 255 / 0.07);
+  --dg-tone-track: rgb(120 120 128 / 0.34);
+  --dg-tone-rail: rgb(255 255 255 / 0.22);
+  --dg-tone-line: rgb(255 255 255 / 0.2);
+  --dg-tone-rim: 1;
+  --dg-tone-glare: 1;
+  --dg-tone-scrim: rgb(0 0 0 / 0.28);
+  color-scheme: light;
 }
 
 /* ---------- the material ---------- */
@@ -44,11 +118,11 @@
   --dg-magnify: 1; /* a loupe, for thumbs */
   /* the rim: a hairline, the lit edge, the light bouncing off the far edge, a glow inside */
   --dg-bevel:
-    inset 0 0 0 1px rgb(255 255 255 / 0.1),
-    inset calc(var(--dg-lx) * -1.6px) calc(var(--dg-ly) * -1.6px) 1px -0.4px rgb(255 255 255 / 0.62),
-    inset calc(var(--dg-lx) * 1.4px) calc(var(--dg-ly) * 1.4px) 1.5px -0.6px rgb(255 255 255 / 0.3),
-    inset calc(var(--dg-lx) * -5px) calc(var(--dg-ly) * -5px) 12px -6px rgb(255 255 255 / 0.22),
-    inset 0 0 calc(var(--dg-bezel) * 0.8px) rgb(255 255 255 / 0.06);
+    inset 0 0 0 1px rgb(255 255 255 / calc(0.1 * var(--dg-tone-rim))),
+    inset calc(var(--dg-lx) * -1.6px) calc(var(--dg-ly) * -1.6px) 1px -0.4px rgb(255 255 255 / calc(0.62 * var(--dg-tone-rim))),
+    inset calc(var(--dg-lx) * 1.4px) calc(var(--dg-ly) * 1.4px) 1.5px -0.6px rgb(255 255 255 / calc(0.3 * var(--dg-tone-rim))),
+    inset calc(var(--dg-lx) * -5px) calc(var(--dg-ly) * -5px) 12px -6px rgb(255 255 255 / calc(0.22 * var(--dg-tone-rim))),
+    inset 0 0 calc(var(--dg-bezel) * 0.8px) rgb(255 255 255 / calc(0.06 * var(--dg-tone-rim)));
 
   position: relative;
   isolation: isolate;
@@ -74,12 +148,12 @@
   padding: 1.2px;
   background: linear-gradient(
       var(--dg-angle),
-      rgb(255 255 255 / 0.9),
-      rgb(255 255 255 / 0.22) 22%,
+      rgb(255 255 255 / calc(0.9 * var(--dg-tone-rim))),
+      rgb(255 255 255 / calc(0.22 * var(--dg-tone-rim))) 22%,
       rgb(255 255 255 / 0) 42%,
       rgb(255 255 255 / 0) 62%,
-      rgb(255 255 255 / 0.28) 84%,
-      rgb(255 255 255 / 0.55)
+      rgb(255 255 255 / calc(0.28 * var(--dg-tone-rim))) 84%,
+      rgb(255 255 255 / calc(0.55 * var(--dg-tone-rim)))
     )
     border-box;
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -102,7 +176,7 @@
     transparent 70%
   );
   mix-blend-mode: plus-lighter;
-  opacity: calc(var(--dg-near) * 0.9);
+  opacity: calc(var(--dg-near) * 0.9 * var(--dg-tone-glare));
   transition: opacity 0.4s;
   pointer-events: none;
 }
@@ -114,11 +188,7 @@
 }
 :where(.dg--frosted) {
   --dg-blur: 8;
-  --dg-tint: rgb(255 255 255 / 0.1);
-}
-:where(.dg--dark) {
-  --dg-tint: rgb(10 12 20 / 0.32);
-  --dg-brightness: 0.92;
+  --dg-tint: var(--dg-tone-frosted);
 }
 :where(.dg--light) {
   --dg-tint: rgb(255 255 255 / 0.4);
@@ -302,17 +372,17 @@
   color: var(--dg-text);
   background:
     radial-gradient(circle 120px at var(--dg-mx, 50%) var(--dg-my, 0%), rgb(255 255 255 / calc(var(--dg-near) * 0.14)), transparent 70%) padding-box,
-    linear-gradient(rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.04)) padding-box,
+    linear-gradient(var(--dg-tone-tile), color-mix(in oklab, var(--dg-tone-tile) 60%, transparent)) padding-box,
     linear-gradient(
         var(--dg-angle),
-        rgb(255 255 255 / 0.55),
-        rgb(255 255 255 / 0.1) 35%,
-        rgb(255 255 255 / 0.04) 60%,
-        rgb(255 255 255 / 0.32)
+        rgb(255 255 255 / calc(0.55 * var(--dg-tone-rim))),
+        rgb(255 255 255 / calc(0.1 * var(--dg-tone-rim))) 35%,
+        rgb(255 255 255 / calc(0.04 * var(--dg-tone-rim))) 60%,
+        rgb(255 255 255 / calc(0.32 * var(--dg-tone-rim)))
       )
       border-box;
   box-shadow:
-    inset calc(var(--dg-lx) * -1px) calc(var(--dg-ly) * -1px) 1px -0.5px rgb(255 255 255 / 0.4),
+    inset calc(var(--dg-lx) * -1px) calc(var(--dg-ly) * -1px) 1px -0.5px rgb(255 255 255 / calc(0.4 * var(--dg-tone-rim))),
     0 8px 20px -12px rgb(0 0 0 / 0.35);
   text-decoration: none;
 }
@@ -409,7 +479,7 @@ button.dg-tile {
   --dg-bezel: 10;
   --dg-blur: 0;
   --dg-dispersion: 0.8;
-  --dg-tint: rgb(255 255 255 / 0.14);
+  --dg-tint: var(--dg-tone-strong);
   --dg-shadow: 0 6px 16px -6px rgb(0 0 0 / 0.4);
   position: absolute;
   top: 0;
@@ -571,7 +641,7 @@ button.dg-tile {
   height: 22px;
   margin: 0 4px;
   border: 0;
-  background: rgb(255 255 255 / 0.22);
+  background: var(--dg-tone-line);
 }
 
 /* ---------- menu ---------- */
@@ -614,12 +684,12 @@ button.dg-tile {
   height: 1px;
   margin: 4px 12px;
   border: 0;
-  background: rgb(255 255 255 / 0.16);
+  background: var(--dg-tone-line);
 }
 
 .dg-menu .dg-droplet {
   border-radius: 20px;
-  --dg-tint: rgb(255 255 255 / 0.12);
+  --dg-tint: color-mix(in oklab, var(--dg-tone-strong) 85%, transparent);
 }
 
 /* ---------- switch ---------- */
@@ -658,7 +728,7 @@ button.dg-tile {
   width: var(--dg-track-w);
   height: var(--dg-track-h);
   border-radius: 999px;
-  background: rgb(120 120 128 / 0.34);
+  background: var(--dg-tone-track);
   box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.2);
   transition: background-color 0.3s;
 }
@@ -749,7 +819,7 @@ button.dg-tile {
   right: 0;
   height: 6px;
   border-radius: 99px;
-  background: rgb(255 255 255 / 0.22);
+  background: var(--dg-tone-rail);
   box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.2);
   overflow: hidden;
 }
@@ -922,7 +992,7 @@ dialog.dg-sheet:not([open]) {
 }
 
 dialog.dg-sheet::backdrop {
-  background: rgb(0 0 0 / 0.28);
+  background: var(--dg-tone-scrim, rgb(0 0 0 / 0.28));
   transition:
     background-color 0.3s,
     overlay 0.3s allow-discrete,

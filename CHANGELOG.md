@@ -9,5 +9,6 @@ First release.
 - Touch: presses swell, glow at the touch point, stretch towards the pointer and spring back.
 - Components: buttons (glass, tinted, solid, icon), chips, cards and tiles, text fields, switches and sliders whose thumbs turn into lenses, segmented controls and tab bars with draggable drops, toolbars and menus with gliding highlights, toasts, sheets.
 - Every setting is a CSS custom property; `deepGlass()`, `toast()`, `canRefract()` and `lensMap()` in JavaScript; a `<script>` build.
+- Dark glass: `data-dg-theme="dark"` on the page or any part of it (`auto` follows the system, `light` brings clear glass back), or `dg--dark` on one pane. Smoked tint, dimmer backdrop, softer highlights, deeper shadows; every component follows, and lenses are remade when the theme changes.
 - Fast: tiny lens maps encoded off the main thread, fringes only where they show, light that only touches the panes near the pointer, no lens for hidden drops and resting thumbs, new lenses built a few per frame. Settings changed from code are applied to visible panes first.
 - Accessible roles and keyboard support; `prefers-reduced-motion`, `prefers-reduced-transparency` and forced colors.

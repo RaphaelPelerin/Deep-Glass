@@ -380,6 +380,11 @@ const mutations = MutationObserverLike((records) => {
   }
 });
 
+// ---------- themes: dark glass changes the optics, every lens is made again ----------
+
+const themes = MutationObserverLike(() => refreshAll());
+const systemDark = typeof matchMedia === 'undefined' ? null : matchMedia('(prefers-color-scheme: dark)');
+
 // ---------- lifecycle ----------
 
 export function defineControl(selector: string, setup: Setup): void {
@@ -398,6 +403,8 @@ export function start(root: ParentNode, opts: RuntimeOptions): void {
     addEventListener('scroll', relight, { passive: true, capture: true });
     addEventListener('resize', relight, { passive: true });
     addEventListener('deviceorientation', onTilt, { passive: true });
+    themes.observe(document.documentElement, { attributes: true, attributeFilter: ['data-dg-theme'], subtree: true });
+    systemDark?.addEventListener('change', refreshAll);
   }
   if (!roots.has(root)) {
     roots.add(root);
@@ -424,6 +431,8 @@ export function stop(): void {
   removeEventListener('scroll', relight, { capture: true });
   removeEventListener('resize', relight);
   removeEventListener('deviceorientation', onTilt);
+  themes.disconnect();
+  systemDark?.removeEventListener('change', refreshAll);
   document.documentElement.removeAttribute('data-dg-refraction');
   started = false;
 }

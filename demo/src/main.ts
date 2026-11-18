@@ -5,6 +5,35 @@ import { toast, deepGlass } from 'deep-glass';
 import { hydrateIcons, icon } from './icons';
 
 hydrateIcons();
+
+// ---------- dark glass: follows the system, until the visitor picks one ----------
+
+const html = document.documentElement;
+const themeMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')!;
+const systemDark = matchMedia('(prefers-color-scheme: dark)');
+let picked: string | null = null;
+try {
+  picked = localStorage.getItem('dg-theme');
+} catch {
+  // private mode: the system decides
+}
+let dark = picked ? picked === 'dark' : systemDark.matches;
+const themeButton = document.querySelector<HTMLElement>('#theme')!;
+function applyTheme() {
+  // the script sees the attribute change and makes every lens again with the dark optics
+  html.dataset.dgTheme = dark ? 'dark' : 'light';
+  themeMeta.content = dark ? '#090b16' : '#1b1f3a';
+  themeButton.innerHTML = icon(dark ? 'sun' : 'moon');
+  themeButton.setAttribute('aria-pressed', String(dark));
+  themeButton.setAttribute('aria-label', dark ? 'Clear glass' : 'Dark glass');
+}
+applyTheme();
+systemDark.addEventListener('change', (e) => {
+  if (picked) return;
+  dark = e.matches;
+  applyTheme();
+});
+
 // ?frosted shows what Safari and Firefox get
 const params = new URLSearchParams(location.search);
 const glass = deepGlass({ refraction: !params.has('frosted'), light: !params.has('nolight') });
@@ -23,6 +52,18 @@ if (!glass.refraction) {
   support.querySelector('span')!.textContent = 'Frosted here: open in Chrome or Edge to see it bend';
   support.classList.add('dg--dark');
 }
+
+themeButton.addEventListener('click', () => {
+  dark = !dark;
+  picked = dark ? 'dark' : 'light';
+  try {
+    localStorage.setItem('dg-theme', picked);
+  } catch {
+    // not remembered, still applied
+  }
+  applyTheme();
+  toast(dark ? 'Dark glass' : 'Clear glass', { icon: iconNode(dark ? 'moon' : 'sun') });
+});
 
 // ---------- wallpapers: the tab bar ----------
 

@@ -61,6 +61,12 @@ await page.evaluate(() => document.querySelector('#card').scrollIntoView({ block
 await page.mouse.move(1150, 320);
 await wait(1200);
 await shot('card', await box('.profile', 60));
+// the same card in dark glass (the demo dims its wallpaper too)
+await page.evaluate(() => (document.documentElement.dataset.dgTheme = 'dark'));
+await wait(1600);
+await shot('card-dark', await box('.profile', 60));
+await page.evaluate(() => (document.documentElement.dataset.dgTheme = 'light'));
+await wait(1200);
 
 await page.evaluate(() => document.querySelector('#components').scrollIntoView({ block: 'start', behavior: 'instant' }));
 await wait(1200);

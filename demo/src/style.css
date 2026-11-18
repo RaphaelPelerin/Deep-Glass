@@ -53,6 +53,29 @@ a {
   overflow: hidden;
 }
 
+/* dark glass: the wallpaper dims behind it */
+.wallpaper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: rgb(3 4 12 / 0);
+  transition: background-color 0.6s ease;
+  pointer-events: none;
+}
+
+[data-dg-theme='dark'] .wallpaper::after {
+  background-color: rgb(3 4 12 / 0.5);
+}
+
+[data-dg-theme='dark'] body {
+  background: #090b16;
+}
+
+/* toasts drop in below the nav */
+.dg-toasts {
+  top: 78px;
+}
+
 .wp {
   position: absolute;
   inset: 0;

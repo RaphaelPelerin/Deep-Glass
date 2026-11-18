@@ -6,9 +6,9 @@
 [![gzip](https://img.shields.io/badge/gzip-8%20kB%20js%20%2B%204%20kB%20css-8ab4ff)](#size)
 [![license](https://img.shields.io/badge/license-MIT-8ab4ff)](LICENSE)
 
-| ![A glass card](.github/assets/card.webp) | ![A loupe over a title](.github/assets/loupe.webp) |
-| :--: | :--: |
-| A card, frosted, with a refracting rim | A loupe: a narrow rim and a magnified middle |
+| ![A glass card](.github/assets/card.webp) | ![The same card in dark glass](.github/assets/card-dark.webp) | ![A loupe over a title](.github/assets/loupe.webp) |
+| :--: | :--: | :--: |
+| A card, frosted, with a refracting rim | The same card in [dark glass](#dark-glass) | A loupe: a narrow rim and a magnified middle |
 
 ![Every component on a wallpaper](.github/assets/components.webp)
 
@@ -96,6 +96,22 @@ toast('Saved'); // a glass pill drops in from the top
 
 Tints: `dg--clear`, `dg--frosted`, `dg--dark`, `dg--light`, `dg--tinted`. Sizes: `dg-button--sm`, `--lg`, `--block`.
 
+## Dark glass
+
+Smoked glass for dark interfaces: a darker tint, a dimmer backdrop, softer highlights, deeper shadows. Every component follows: tiles, drops, switch and slider tracks, separators, the scrim behind sheets.
+
+```html
+<html data-dg-theme="dark">      <!-- the whole page -->
+<html data-dg-theme="auto">      <!-- follows the system's light or dark mode -->
+<section data-dg-theme="dark">   <!-- one part of the page -->
+<div data-dg-theme="light">      <!-- clear glass again, inside a dark part -->
+<button class="dg dg-button dg--dark">Save</button>   <!-- a single pane -->
+```
+
+Switching the attribute is enough: the script sees it, or the system's change in `auto`, and remakes every lens with the dark optics. Panes switched with the `dg--dark` class need `refresh()`.
+
+Each tone is a set of custom properties you can override: `--dg-tint`, `--dg-text`, `--dg-shadow`, `--dg-saturation`, `--dg-brightness`, and `--dg-tone-frosted`, `--dg-tone-strong` (drops), `--dg-tone-tile`, `--dg-tone-track`, `--dg-tone-rail`, `--dg-tone-line`, `--dg-tone-rim` (highlight strength), `--dg-tone-glare`, `--dg-tone-scrim`.
+
 ## Tuning the glass
 
 Every setting is a CSS custom property: set it on `:root` for the page, on a section, or on one element. The script reads them.
@@ -109,10 +125,10 @@ Every setting is a CSS custom property: set it on `:root` for the page, on a sec
 | `--dg-dispersion` | `0.5` | Color fringes, `0` to `1` |
 | `--dg-blur` | per component | Frosting, px |
 | `--dg-frost` | `0` | Extra frosting for every pane, px |
-| `--dg-saturation` | `1.7` | |
-| `--dg-brightness` | `1.05` | |
+| `--dg-saturation` | `1.7` (dark: `1.45`) | |
+| `--dg-brightness` | `1.05` (dark: `0.84`) | |
 | `--dg-magnify` | `1` | Magnifies the whole pane: a loupe |
-| `--dg-tint` | translucent white | The glass color |
+| `--dg-tint` | translucent white (dark: smoke) | The glass color |
 | `--dg-accent` | `#0a84ff` | Tinted buttons, sliders, focus rings |
 | `--dg-on` | `#34c759` | Switches when on |
 | `--dg-shadow` | soft | The shadow under each pane |
