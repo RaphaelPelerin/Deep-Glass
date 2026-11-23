@@ -68,8 +68,56 @@ themeButton.addEventListener('click', () => {
 // ---------- wallpapers: the tab bar ----------
 
 $('#wallpapers').addEventListener('dg:change', (e) => {
-  document.body.dataset.wallpaper = (e as CustomEvent<{ value: string }>).detail.value;
+  const value = (e as CustomEvent<{ value: string }>).detail.value;
+  document.body.dataset.wallpaper = value;
+  showSky(value === 'sky');
 });
+
+// deep-sky (github.com/RaphaelPelerin/Deep-Sky): a GPU night sky drawn off the main thread. Its
+// script build is fetched the first time Sky is picked, and the sky stops while it isn't shown
+interface Sky {
+  pause(): void;
+  play(): void;
+}
+declare global {
+  interface Window {
+    DeepSky?: { createDeepSky(el: HTMLElement, options?: object): Sky };
+  }
+}
+let sky: Sky | null = null;
+let skyLoad: Promise<void> | null = null;
+let skyWanted = false;
+function showSky(on: boolean) {
+  skyWanted = on;
+  if (sky) {
+    if (on) sky.play();
+    else sky.pause();
+    return;
+  }
+  if (!on) return;
+  skyLoad ??= new Promise<void>((done, fail) => {
+    const s = document.createElement('script');
+    s.src = '/deep-sky.js';
+    s.onload = () => done();
+    s.onerror = fail;
+    document.head.append(s);
+  });
+  skyLoad.then(
+    () => {
+      if (sky || !window.DeepSky) return;
+      sky = window.DeepSky.createDeepSky($('.wp-sky'), {
+        fixed: false,
+        theme: 'dark',
+        // clicks on the glass are for the glass
+        clickIgnore: '.dg, a, button, input, textarea, select, label, summary, [role="slider"]',
+      });
+      if (!skyWanted) sky.pause();
+    },
+    () => {
+      skyLoad = null;
+    },
+  );
+}
 
 // ---------- toasts, sheet, copy ----------
 

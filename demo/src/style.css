@@ -89,7 +89,8 @@ a {
 [data-wallpaper='sunset'] .wp-sunset,
 [data-wallpaper='type'] .wp-type,
 [data-wallpaper='grid'] .wp-grid,
-[data-wallpaper='bloom'] .wp-bloom {
+[data-wallpaper='bloom'] .wp-bloom,
+[data-wallpaper='sky'] .wp-sky {
   opacity: 1;
 }
 
@@ -210,6 +211,11 @@ a {
   background: radial-gradient(80% 80% at 50% 40%, #182158, #090c1f);
 }
 
+/* deep-sky paints this color itself before its first frame */
+.wp-sky {
+  background: #04050d;
+}
+
 .wp-bloom::before {
   background: radial-gradient(80% 80% at 50% 40%, #0b0f2a, #020308);
 }
@@ -272,6 +278,7 @@ a {
 }
 
 .nav-bar .brand {
+  white-space: nowrap;
   font-size: 17px;
   font-weight: 750;
   letter-spacing: -0.03em;
