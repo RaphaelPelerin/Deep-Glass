@@ -171,7 +171,12 @@ function build(id: string, shape: LensShape, map: Map_, optics: Optics): SVGFilt
     make('feGaussianBlur', { in: src, stdDeviation: optics.blur, edgeMode: 'duplicate', result: 'frost' }, f);
     src = 'frost';
   }
-  make('feImage', { href: map.url, x: 0, y: 0, width: w, height: h, preserveAspectRatio: 'none', result: 'lens' }, f);
+  // the map sits on a still gray: if Chrome ever draws the lens without its image (it does while
+  // its own tab previews are shown), every pixel would read 0, the largest offset there is, and the
+  // whole backdrop would jump with a band along the top. On gray it just doesn't bend for a moment
+  make('feFlood', { 'flood-color': 'rgb(128,128,128)', x: 0, y: 0, width: w, height: h, result: 'still' }, f);
+  make('feImage', { href: map.url, x: 0, y: 0, width: w, height: h, preserveAspectRatio: 'none', result: 'map' }, f);
+  make('feComposite', { in: 'map', in2: 'still', operator: 'over', result: 'lens' }, f);
   const shift = (scale: number, result: string) =>
     make('feDisplacementMap', { in: src, in2: 'lens', scale, xChannelSelector: 'R', yChannelSelector: 'G', result }, f);
   // red bends a little less than green, blue a little more: fringes where the rim is steep. They
