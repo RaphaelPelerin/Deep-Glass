@@ -21,7 +21,7 @@
   ],
   "license": "MIT",
   "author": "Raphael Pellerin",
-  "homepage": "https://github.com/RaphaelPelerin/deep-glass#readme",
+  "homepage": "https://deep-glass.vercel.app",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/RaphaelPelerin/deep-glass.git"

@@ -6,6 +6,8 @@
 [![gzip](https://img.shields.io/badge/gzip-8%20kB%20js%20%2B%204%20kB%20css-8ab4ff)](#size)
 [![license](https://img.shields.io/badge/license-MIT-8ab4ff)](LICENSE)
 
+**[Live demo →](https://deep-glass.vercel.app)** Drag the loupe, press the buttons, switch to dark glass.
+
 | ![A glass card](.github/assets/card.webp) | ![The same card in dark glass](.github/assets/card-dark.webp) | ![A loupe over a title](.github/assets/loupe.webp) |
 | :--: | :--: | :--: |
 | A card, frosted, with a refracting rim | The same card in [dark glass](#dark-glass) | A loupe: a narrow rim and a magnified middle |
