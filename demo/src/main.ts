@@ -73,19 +73,10 @@ $('#wallpapers').addEventListener('dg:change', (e) => {
   showSky(value === 'sky');
 });
 
-// deep-sky (github.com/RaphaelPelerin/Deep-Sky): a GPU night sky drawn off the main thread. Its
-// script build is fetched the first time Sky is picked, and the sky stops while it isn't shown
-interface Sky {
-  pause(): void;
-  play(): void;
-}
-declare global {
-  interface Window {
-    DeepSky?: { createDeepSky(el: HTMLElement, options?: object): Sky };
-  }
-}
-let sky: Sky | null = null;
-let skyLoad: Promise<void> | null = null;
+// deep-sky (npm: deep-sky-background): a GPU night sky drawn off the main thread. It's loaded the
+// first time Sky is picked (its own chunk), and the sky stops while it isn't shown
+let sky: { pause(): void; play(): void } | null = null;
+let skyLoad: Promise<unknown> | null = null;
 let skyWanted = false;
 function showSky(on: boolean) {
   skyWanted = on;
@@ -95,17 +86,9 @@ function showSky(on: boolean) {
     return;
   }
   if (!on) return;
-  skyLoad ??= new Promise<void>((done, fail) => {
-    const s = document.createElement('script');
-    s.src = '/deep-sky.js';
-    s.onload = () => done();
-    s.onerror = fail;
-    document.head.append(s);
-  });
-  skyLoad.then(
-    () => {
-      if (sky || !window.DeepSky) return;
-      sky = window.DeepSky.createDeepSky($('.wp-sky'), {
+  skyLoad ??= import('deep-sky-background').then(
+    ({ createDeepSky }) => {
+      sky = createDeepSky($('.wp-sky'), {
         fixed: false,
         theme: 'dark',
         // clicks on the glass are for the glass
