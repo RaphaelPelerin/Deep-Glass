@@ -53,18 +53,21 @@ a {
   overflow: hidden;
 }
 
-/* dark glass: the wallpaper dims behind it */
-.wallpaper::after {
+/*
+ * dark glass: every wallpaper has a night of its own (not the day under a veil): near black, with
+ * a few saturated lights for the smoked glass to bend. It fades in over the day one
+ */
+.wp::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-color: rgb(3 4 12 / 0);
-  transition: background-color 0.6s ease;
+  opacity: 0;
+  transition: opacity 0.7s ease;
   pointer-events: none;
 }
 
-[data-dg-theme='dark'] .wallpaper::after {
-  background-color: rgb(3 4 12 / 0.5);
+[data-dg-theme='dark'] .wp::before {
+  opacity: 1;
 }
 
 [data-dg-theme='dark'] body {
@@ -101,6 +104,17 @@ a {
     linear-gradient(115deg, #e5473b 0%, #ef7b2b 22%, #3b61f4 52%, #4a8cff 76%, #a8dbff 100%);
 }
 
+/* embers on the left, a cold blue on the right */
+.wp-sunset::before {
+  background:
+    radial-gradient(42% 38% at 2% 10%, rgb(255 64 44 / 0.62) 0%, transparent 70%),
+    radial-gradient(26% 44% at 14% 72%, rgb(255 138 30 / 0.42) 0%, transparent 70%),
+    radial-gradient(40% 52% at 100% 18%, rgb(36 78 255 / 0.66) 0%, transparent 70%),
+    radial-gradient(52% 42% at 80% 104%, rgb(80 170 255 / 0.4) 0%, transparent 72%),
+    radial-gradient(30% 30% at 46% 40%, rgb(122 64 255 / 0.5) 0%, transparent 72%),
+    linear-gradient(115deg, #1a0708 0%, #120914 34%, #070a24 64%, #050b1c 100%);
+}
+
 .wp-sunset::after {
   content: '';
   position: absolute;
@@ -117,6 +131,11 @@ a {
   line-height: 0.8;
   letter-spacing: -0.07em;
   color: rgb(255 255 255 / 0.13);
+  transition: color 0.7s ease;
+}
+
+[data-dg-theme='dark'] .wp-word {
+  color: rgb(255 255 255 / 0.075);
 }
 
 .wp-word:first-child {
@@ -134,6 +153,19 @@ a {
   flex-direction: column;
   justify-content: center;
   background: #0c0e1a;
+}
+
+.wp-type::before {
+  background: radial-gradient(70% 60% at 50% 50%, #0a0b16, #030308);
+}
+
+.wp-type p {
+  position: relative;
+  transition: opacity 0.7s ease;
+}
+
+[data-dg-theme='dark'] .wp-type p {
+  opacity: 0.4;
 }
 
 .wp-type p {
@@ -164,8 +196,46 @@ a {
     conic-gradient(from 210deg at 50% 50%, #ff4d6d, #ffb703, #3ddc97, #3a86ff, #8338ec, #ff4d6d);
 }
 
+/* the colors glow from the middle into the night, faint lines over everything */
+.wp-grid::before {
+  background:
+    linear-gradient(rgb(255 255 255 / 0.085) 1.5px, transparent 1.5px) 0 0 / 44px 44px,
+    linear-gradient(90deg, rgb(255 255 255 / 0.085) 1.5px, transparent 1.5px) 0 0 / 44px 44px,
+    radial-gradient(closest-side, rgb(4 5 12 / 0.2) 0%, rgb(4 5 12 / 0.72) 40%, #04050c 85%) center / 130vmax 130vmax no-repeat,
+    conic-gradient(from 210deg at 50% 50%, #ff4d6d, #ffb703, #3ddc97, #3a86ff, #8338ec, #ff4d6d);
+  background-color: #04050c;
+}
+
 .wp-bloom {
   background: radial-gradient(80% 80% at 50% 40%, #182158, #090c1f);
+}
+
+.wp-bloom::before {
+  background: radial-gradient(80% 80% at 50% 40%, #0b0f2a, #020308);
+}
+
+/* at night the discs turn into lights: a bright core that fades out */
+.wp-bloom span {
+  background: var(--c);
+  transition: background-color 0.7s ease;
+}
+
+.wp-bloom span::after {
+  content: '';
+  position: absolute;
+  inset: -18%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--c) 0%, color-mix(in srgb, var(--c) 55%, transparent) 42%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+
+[data-dg-theme='dark'] .wp-bloom span {
+  background-color: transparent;
+}
+
+[data-dg-theme='dark'] .wp-bloom span::after {
+  opacity: 0.9;
 }
 
 .wp-bloom span {
@@ -173,13 +243,13 @@ a {
   border-radius: 50%;
 }
 
-.wp-bloom span:nth-child(1) { width: 46vmax; height: 46vmax; left: -8vmax; top: -10vmax; background: #ff5470; }
-.wp-bloom span:nth-child(2) { width: 30vmax; height: 30vmax; right: 6vmax; top: 4vmax; background: #ffcc33; }
-.wp-bloom span:nth-child(3) { width: 38vmax; height: 38vmax; right: -12vmax; bottom: -14vmax; background: #3a7bff; }
-.wp-bloom span:nth-child(4) { width: 22vmax; height: 22vmax; left: 30vmax; bottom: 6vmax; background: #2fe0a6; }
-.wp-bloom span:nth-child(5) { width: 14vmax; height: 14vmax; left: 46vmax; top: 18vmax; background: #b35cff; }
-.wp-bloom span:nth-child(6) { width: 9vmax; height: 9vmax; left: 12vmax; bottom: 18vmax; background: #fff; }
-.wp-bloom span:nth-child(7) { width: 18vmax; height: 18vmax; right: 34vmax; bottom: -6vmax; background: #ff8a3d; }
+.wp-bloom span:nth-child(1) { width: 46vmax; height: 46vmax; left: -8vmax; top: -10vmax; --c: #ff5470; }
+.wp-bloom span:nth-child(2) { width: 30vmax; height: 30vmax; right: 6vmax; top: 4vmax; --c: #ffcc33; }
+.wp-bloom span:nth-child(3) { width: 38vmax; height: 38vmax; right: -12vmax; bottom: -14vmax; --c: #3a7bff; }
+.wp-bloom span:nth-child(4) { width: 22vmax; height: 22vmax; left: 30vmax; bottom: 6vmax; --c: #2fe0a6; }
+.wp-bloom span:nth-child(5) { width: 14vmax; height: 14vmax; left: 46vmax; top: 18vmax; --c: #b35cff; }
+.wp-bloom span:nth-child(6) { width: 9vmax; height: 9vmax; left: 12vmax; bottom: 18vmax; --c: #fff; }
+.wp-bloom span:nth-child(7) { width: 18vmax; height: 18vmax; right: 34vmax; bottom: -6vmax; --c: #ff8a3d; }
 
 /* ---------- nav ---------- */
 
