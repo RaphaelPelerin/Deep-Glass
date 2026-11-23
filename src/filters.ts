@@ -21,6 +21,8 @@ const MAP_PX_PER_RIM = 8;
 const MAX_MAP = 256;
 /** fringes are 3 passes instead of 1: only where they show, on clear glass (frosting hides them) */
 const FRINGES_UP_TO_BLUR = 3;
+/** the widest a color fringe gets, px */
+const MAX_FRINGE = 1.5;
 /** lenses no pane uses any more stay ready for a while (a thumb let go, a drop at rest…) */
 const SPARE = 40;
 
@@ -146,7 +148,10 @@ function build(id: string, shape: LensShape, map: Map_, optics: Optics): SVGFilt
   // cost 3 passes instead of 1, so only where they show: wider than a pixel, on clear glass
   const spread = Math.min(1, optics.dispersion) * 0.14;
   if ((map.scale / 2) * spread >= 1 && optics.blur < FRINGES_UP_TO_BLUR) {
-    [1 - spread, 1, 1 + spread].forEach((k, i) => {
+    // and never more than a fine line: a loupe moves its backdrop a lot, and wide fringes would
+    // split what it magnifies into three colored copies
+    const s = Math.min(spread, MAX_FRINGE / (map.scale / 2));
+    [1 - s, 1, 1 + s].forEach((k, i) => {
       shift(map.scale * k, `bent${i}`);
       make('feColorMatrix', { in: `bent${i}`, type: 'matrix', values: CHANNELS[i], result: `ch${i}` }, f);
     });

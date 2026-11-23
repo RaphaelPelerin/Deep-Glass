@@ -106,10 +106,16 @@ function flush() {
   if (queued.size) frame = requestAnimationFrame(flush);
 }
 
+/** a pane gets its lens only near the screen: off screen, nothing is made until it comes close */
 function queue(pane: Pane) {
+  if (!onScreen.has(pane.el)) {
+    stale.add(pane);
+    return;
+  }
   queued.add(pane);
   frame ||= requestAnimationFrame(flush);
 }
+
 
 /** re-reads a pane's settings now (after a state that changes `--dg-*` values) */
 export function refresh(el: HTMLElement): void {
@@ -240,6 +246,7 @@ const visibility = IntersectionObserverLike((entries) => {
   for (const e of entries) {
     const el = e.target as HTMLElement;
     if (!e.isIntersecting) {
+      // a lens already made stays: off screen it costs nothing, and coming back costs nothing either
       onScreen.delete(el);
       continue;
     }
@@ -325,6 +332,13 @@ function onPressEnd(e: PointerEvent) {
 // ---------- discovery ----------
 
 function attach(el: HTMLElement) {
+  // a group whose glass is drawn by a surface inside it: the surface is the pane
+  if (el.hasAttribute('data-dg-surface')) {
+    for (const [selector, setup] of controls) {
+      if (el.matches(selector) && !cleanups.has(el)) cleanups.set(el, setup(el) ?? (() => {}));
+    }
+    return;
+  }
   if (el.matches(GLASS) && !panes.has(el)) {
     const pane: Pane = { el, key: null, w: el.offsetWidth, h: el.offsetHeight };
     panes.set(el, pane);
@@ -338,6 +352,28 @@ function attach(el: HTMLElement) {
     if (!el.matches(selector) || cleanups.has(el)) continue;
     cleanups.set(el, setup(el) ?? (() => {}));
   }
+}
+
+/**
+ * The element stops being a pane (its glass is drawn by a surface inside it now): no lens, no
+ * light of its own. Its behavior, if it has one, stays.
+ */
+export function demote(el: HTMLElement): void {
+  el.setAttribute('data-dg-surface', '');
+  const pane = panes.get(el);
+  if (pane) {
+    if (pane.key) release(pane.key);
+    queued.delete(pane);
+    stale.delete(pane);
+    resizes.unobserve(el);
+    panes.delete(el);
+  }
+  if (lit.delete(el)) {
+    visibility.unobserve(el);
+    onScreen.delete(el);
+  }
+  el.style.removeProperty('--dg-filter');
+  delete el.dataset.dgRefracts;
 }
 
 function detach(el: HTMLElement) {
@@ -448,7 +484,8 @@ function ResizeObserverLike(cb: ResizeObserverCallback) {
 function IntersectionObserverLike(cb: IntersectionObserverCallback) {
   return typeof IntersectionObserver === 'undefined'
     ? ({ observe() {}, unobserve() {}, disconnect() {} } as unknown as IntersectionObserver)
-    : new IntersectionObserver(cb);
+    : // a little ahead of the screen: lenses are ready before they show
+      new IntersectionObserver(cb, { rootMargin: '100% 0px' });
 }
 function MutationObserverLike(cb: MutationCallback) {
   return typeof MutationObserver === 'undefined'

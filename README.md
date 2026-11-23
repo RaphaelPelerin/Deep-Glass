@@ -174,7 +174,7 @@ Glass is drawn by the GPU on every frame where it or what's behind it moves, so 
 - **Tiny lens maps.** The browser redraws each displacement map on every frame, at a cost that grows with its size. The bending is smooth, so maps hold only about 8 pixels across the rim and the GPU stretches them: a button's map is about 1,600 pixels, and a 420×530 card's is 12,000 instead of 117,000. Across the demo page that's 6 times fewer pixels to redraw on every frame.
 - **Fringes only where they show.** Color fringes take three passes instead of one, so they run only where they spread wider than a pixel, on clear glass.
 - **Light only where you are.** The pointer relights only the panes near it, with rounded values, and only when they change. Every box is read before anything is written.
-- **Nothing for what you can't see.** Resting switch and slider thumbs are opaque, so they get no lens until you hold them, and hidden drops aren't drawn. Maps are encoded off the main thread, and new lenses are built a few per frame.
+- **Nothing for what you can't see.** A pane gets its lens only when it comes within a screen of the viewport: a long page starts with the few lenses at the top. Resting switch and slider thumbs are opaque, so they get no lens until you hold them, and hidden drops aren't drawn. Maps are encoded off the main thread, and new lenses are built a few per frame.
 
 On the demo page, 28 refracting panes scroll at about 80% of the frame rate of the same page with no glass at all.
 

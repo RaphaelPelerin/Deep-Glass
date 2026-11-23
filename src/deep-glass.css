@@ -291,8 +291,8 @@
   --dg-text: #0b0b10;
   background: #fff;
   text-shadow: none;
-  backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   box-shadow:
     inset 0 -2px 4px rgb(0 0 0 / 0.08),
     inset 0 1px 0 rgb(255 255 255 / 0.9),
@@ -473,6 +473,34 @@ button.dg-tile {
     var(--dg-shadow);
 }
 
+/* ---------- surface: the glass of a group with a drop, drawn behind its items ---------- */
+
+/* the group itself is no glass parent, so its drop can see the whole page and bend it.
+   (Here and everywhere, the standard backdrop-filter comes after its -webkit- twin: some CSS
+   minifiers keep only the last of the two.) */
+.dg[data-dg-surface] {
+  background: none;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.dg[data-dg-surface]::before,
+.dg[data-dg-surface]::after {
+  display: none;
+}
+
+.dg-surface {
+  /* the group's rim and frosting, not the defaults of a new pane */
+  --dg-bezel: inherit;
+  --dg-blur: inherit;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
 /* ---------- droplet: the selection of segmented controls, tab bars, toolbars and menus ---------- */
 
 .dg-droplet {
@@ -507,8 +535,11 @@ button.dg-tile {
 
 /* held: a clear lens, magnifying what it passes over */
 .dg-droplet[data-lifted] {
-  --dg-magnify: 1.3;
-  --dg-bezel: 14;
+  /* the magnified middle does the work; a narrow rim, or what passes under the round ends
+     gets drawn out into rays */
+  --dg-magnify: 1.25;
+  --dg-bezel: 7;
+  --dg-dispersion: 0.5;
   --dg-tint: rgb(255 255 255 / 0.03);
   --dg-shadow: 0 14px 30px -10px rgb(0 0 0 / 0.5);
 }
@@ -692,6 +723,11 @@ button.dg-tile {
   --dg-tint: color-mix(in oklab, var(--dg-tone-strong) 85%, transparent);
 }
 
+/* pressed in place (toolbars, menus): it sinks a little and brightens */
+:is(.dg-toolbar, .dg-menu) .dg-droplet[data-pressed] {
+  --dg-tint: color-mix(in oklab, var(--dg-tone-strong), white 12%);
+}
+
 /* ---------- switch ---------- */
 
 .dg-switch {
@@ -757,8 +793,8 @@ button.dg-tile {
   height: calc(var(--dg-track-h) - 4px);
   border-radius: 999px;
   background-color: #fff;
-  backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   transition:
     left var(--dg-ease-time) var(--dg-ease),
     width var(--dg-ease-time) var(--dg-ease),
@@ -777,8 +813,8 @@ button.dg-tile {
 .dg-switch[data-lifted] .dg-switch__thumb {
   --dg-refraction: inherit;
   --dg-magnify: 1.25;
-  backdrop-filter: var(--dg-filter, blur(10px) saturate(var(--dg-saturation)));
   -webkit-backdrop-filter: blur(10px) saturate(var(--dg-saturation));
+  backdrop-filter: var(--dg-filter, blur(10px) saturate(var(--dg-saturation)));
   --dg-shadow: 0 6px 14px -4px rgb(0 0 0 / 0.35);
   background-color: rgb(255 255 255 / 0.02);
   transform: scale(1.18, 1.36);
@@ -846,8 +882,8 @@ button.dg-tile {
   margin-top: calc(var(--dg-thumb-h) / -2);
   border-radius: 999px;
   background-color: #fff;
-  backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   pointer-events: none;
   transition:
     transform var(--dg-spring-time) var(--dg-spring),
@@ -857,8 +893,8 @@ button.dg-tile {
 .dg-slider[data-lifted] .dg-slider__thumb {
   --dg-refraction: inherit;
   --dg-magnify: 1.5;
-  backdrop-filter: var(--dg-filter, blur(10px) saturate(var(--dg-saturation)));
   -webkit-backdrop-filter: blur(10px) saturate(var(--dg-saturation));
+  backdrop-filter: var(--dg-filter, blur(10px) saturate(var(--dg-saturation)));
   background-color: rgb(255 255 255 / 0.05);
   transform: scale(1.45, 1.6);
   transition:
@@ -1010,8 +1046,8 @@ dialog.dg-sheet::backdrop {
 @media (prefers-reduced-transparency: reduce) {
   :where(.dg) {
     --dg-tint: rgb(28 30 40 / 0.88);
-    backdrop-filter: blur(30px);
     -webkit-backdrop-filter: blur(30px);
+    backdrop-filter: blur(30px);
   }
 }
 

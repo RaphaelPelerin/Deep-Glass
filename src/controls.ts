@@ -1,4 +1,4 @@
-import { defineControl, refresh } from './runtime';
+import { defineControl, demote, refresh } from './runtime';
 import { prefersReducedMotion } from './support';
 
 interface Box {
@@ -19,6 +19,28 @@ function boxOf(item: Element, root: HTMLElement): Box {
   const r = item.getBoundingClientRect();
   const o = root.getBoundingClientRect();
   return { x: r.left - o.left - root.clientLeft, y: r.top - o.top - root.clientTop, w: r.width, h: r.height };
+}
+
+/**
+ * A glass element only sees what is inside its glass parent, not the page behind it: a drop
+ * inside the group would bend the labels over nothing, and leave the originals showing through.
+ * So the group's glass is drawn by a surface behind its items, and the group itself is no glass
+ * parent: its drop sees the whole page, and really bends it.
+ */
+function surface(root: HTMLElement): () => void {
+  let el = root.querySelector<HTMLElement>(':scope > .dg-surface');
+  const made = !el;
+  if (!el) {
+    el = span('dg dg-surface');
+    el.setAttribute('aria-hidden', 'true');
+    // after the items: their own :first-child or :nth-child styles stay right (it is drawn behind them anyway)
+    root.append(el);
+  }
+  demote(root);
+  return () => {
+    if (made) el.remove();
+    root.removeAttribute('data-dg-surface');
+  };
 }
 
 /** an under-damped spring: it overshoots a little and settles, like a drop of water */
@@ -59,6 +81,7 @@ export class Droplet {
   private frame = 0;
   private last = 0;
   private lifted = false;
+  private pressed = false;
 
   constructor(root: HTMLElement) {
     this.el.setAttribute('aria-hidden', 'true');
@@ -92,6 +115,14 @@ export class Droplet {
     this.lifted = on;
     this.el.toggleAttribute('data-lifted', on);
     refresh(this.el);
+    this.render();
+  }
+
+  /** pressed in place (toolbars, menus): it sinks a little and brightens, no lens */
+  press(on: boolean): void {
+    if (this.pressed === on) return;
+    this.pressed = on;
+    this.el.toggleAttribute('data-pressed', on);
     this.render();
   }
 
@@ -158,7 +189,7 @@ export class Droplet {
       ky *= 1 + stretch;
       kx *= 1 - stretch * 0.4;
     }
-    const lift = this.lifted ? 1.16 : 1;
+    const lift = this.lifted ? 1.12 : this.pressed ? 0.97 : 1;
     const cx = this.px.x + this.pw.x / 2;
     const cy = this.py.x + this.ph.x / 2;
     this.el.style.transform = `translate(${(cx - bw / 2).toFixed(2)}px, ${(cy - bh / 2).toFixed(2)}px) scale(${(kx * lift).toFixed(4)}, ${(ky * lift).toFixed(4)})`;
@@ -174,6 +205,7 @@ function choiceGroup(role: 'radio' | 'tab') {
   return (root: HTMLElement) => {
     const items = () => [...root.querySelectorAll<HTMLElement>(`[role="${role}"]`)];
     const current = () => items().find((i) => i.getAttribute(attr) === 'true') ?? null;
+    const unsurface = surface(root);
     const drop = new Droplet(root);
     const place = (immediate = false) => {
       const cur = current();
@@ -299,6 +331,7 @@ function choiceGroup(role: 'radio' | 'tab') {
       root.removeEventListener('pointerup', onUp);
       root.removeEventListener('pointercancel', onUp);
       drop.destroy();
+      unsurface();
     };
   };
 }
@@ -306,6 +339,7 @@ function choiceGroup(role: 'radio' | 'tab') {
 /** toolbars and menus: a droplet glides under the hovered item, and swells into a lens on press */
 function hoverGroup(itemSelector: string) {
   return (root: HTMLElement) => {
+    const unsurface = surface(root);
     const drop = new Droplet(root);
     const itemOf = (t: EventTarget | null) => {
       const item = (t as Element | null)?.closest?.<HTMLElement>(itemSelector);
@@ -316,8 +350,9 @@ function hoverGroup(itemSelector: string) {
       if (item) drop.to(boxOf(item, root));
     };
     const hide = () => drop.to(null);
-    const down = (e: PointerEvent) => itemOf(e.target) && drop.lift(true);
-    const up = () => drop.lift(false);
+    // a press, not a lift: the drop stays inside its toolbar or menu
+    const down = (e: PointerEvent) => itemOf(e.target) && drop.press(true);
+    const up = () => drop.press(false);
     const blur = (e: FocusEvent) => {
       if (!root.contains(e.relatedTarget as Node | null)) hide();
     };
@@ -337,6 +372,7 @@ function hoverGroup(itemSelector: string) {
       removeEventListener('pointerup', up);
       removeEventListener('pointercancel', up);
       drop.destroy();
+      unsurface();
     };
   };
 }
