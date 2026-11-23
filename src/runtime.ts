@@ -1,4 +1,4 @@
-import { acquire, release } from './filters';
+import { acquire, release, repaint } from './filters';
 import { canRefract, prefersReducedMotion } from './support';
 
 /** the glass material: these refract (or frost) what is behind them */
@@ -427,6 +427,11 @@ export function defineControl(selector: string, setup: Setup): void {
   controls.push([selector, setup]);
 }
 
+/** back from a hidden tab: the browser may have dropped the lens maps */
+const onVisible = () => {
+  if (document.visibilityState === 'visible') repaint();
+};
+
 export function start(root: ParentNode, opts: RuntimeOptions): void {
   options = opts;
   refract = opts.refraction && canRefract();
@@ -441,6 +446,8 @@ export function start(root: ParentNode, opts: RuntimeOptions): void {
     addEventListener('deviceorientation', onTilt, { passive: true });
     themes.observe(document.documentElement, { attributes: true, attributeFilter: ['data-dg-theme'], subtree: true });
     systemDark?.addEventListener('change', refreshAll);
+    document.addEventListener('visibilitychange', onVisible);
+    addEventListener('pageshow', onVisible);
   }
   if (!roots.has(root)) {
     roots.add(root);
@@ -469,6 +476,8 @@ export function stop(): void {
   removeEventListener('deviceorientation', onTilt);
   themes.disconnect();
   systemDark?.removeEventListener('change', refreshAll);
+  document.removeEventListener('visibilitychange', onVisible);
+  removeEventListener('pageshow', onVisible);
   document.documentElement.removeAttribute('data-dg-refraction');
   started = false;
 }

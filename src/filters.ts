@@ -92,10 +92,29 @@ function makeMap(key: string, shape: LensShape, ready: () => void) {
     pending.delete(key);
     for (const f of all) f();
   };
-  if (typeof canvas.toBlob === 'function') {
-    canvas.toBlob((blob) => done(blob ? URL.createObjectURL(blob) : canvas.toDataURL()));
+  // a data URL, not a blob URL: Chrome loads blob images in a filter lazily, may drop them in a
+  // hidden tab, and doesn't always repaint the glass when they come back. A missing map shifts the
+  // whole backdrop by half the lens's strength, which shows as a band along the top. The map is
+  // decoded before it's used, so the first frame of a lens is never empty either
+  const decoded = (url: string) => {
+    if (typeof Image !== 'function') return done(url);
+    const img = new Image();
+    img.src = url;
+    (img.decode ? img.decode() : Promise.resolve()).then(
+      () => done(url),
+      () => done(url),
+    );
+  };
+  if (typeof canvas.toBlob === 'function' && typeof FileReader === 'function') {
+    canvas.toBlob((blob) => {
+      if (!blob) return decoded(canvas.toDataURL());
+      const reader = new FileReader();
+      reader.onload = () => decoded(String(reader.result));
+      reader.onerror = () => decoded(canvas.toDataURL());
+      reader.readAsDataURL(blob);
+    });
   } else {
-    done(canvas.toDataURL());
+    decoded(canvas.toDataURL());
   }
 }
 
@@ -103,7 +122,18 @@ function dropMap(key: string) {
   const map = maps.get(key);
   if (!map || --map.uses > 0) return;
   maps.delete(key);
-  if (map.url.startsWith('blob:')) URL.revokeObjectURL(map.url);
+}
+
+/**
+ * Makes the browser draw every lens again (its maps re-read): for when the page comes back from
+ * a hidden tab, where Chrome may have thrown the decoded images away.
+ */
+export function repaint(): void {
+  for (const f of filters.values()) {
+    const img = f.node.querySelector('feImage');
+    const url = maps.get(f.map)?.url;
+    if (img && url) img.setAttribute('href', url);
+  }
 }
 
 /** keeps one color channel */
