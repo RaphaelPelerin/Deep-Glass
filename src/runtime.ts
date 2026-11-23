@@ -231,6 +231,7 @@ const onPointerMove = (e: PointerEvent) => {
   relight();
 };
 const onPointerLeave = () => {
+  if (document.hasFocus()) outside(true);
   pointer = null;
   relight();
 };
@@ -427,10 +428,23 @@ export function defineControl(selector: string, setup: Setup): void {
   controls.push([selector, setup]);
 }
 
+/**
+ * While the pointer is on the browser's own bar (its tabs and their previews), Chrome may redraw
+ * only part of a lens and misplace its map in that part: a seam across the glass. Meanwhile the
+ * lenses on screen are kept moving by a hair, so they're always redrawn whole (and not for long).
+ */
+let outsideTimer: ReturnType<typeof setTimeout> | undefined;
+function outside(on: boolean) {
+  clearTimeout(outsideTimer);
+  document.documentElement.toggleAttribute('data-dg-outside', on && refract);
+  if (on) outsideTimer = setTimeout(() => outside(false), 20000);
+}
 /** back from a hidden tab or from the browser's own bar: the browser may have dropped the lens maps */
 const onVisible = () => {
+  outside(false);
   if (document.visibilityState === 'visible') repaint();
 };
+const onAway = () => outside(false);
 
 export function start(root: ParentNode, opts: RuntimeOptions): void {
   options = opts;
@@ -449,6 +463,7 @@ export function start(root: ParentNode, opts: RuntimeOptions): void {
     document.addEventListener('visibilitychange', onVisible);
     addEventListener('pageshow', onVisible);
     addEventListener('focus', onVisible);
+    addEventListener('blur', onAway);
     document.documentElement.addEventListener('pointerenter', onVisible);
   }
   if (!roots.has(root)) {
@@ -481,6 +496,8 @@ export function stop(): void {
   document.removeEventListener('visibilitychange', onVisible);
   removeEventListener('pageshow', onVisible);
   removeEventListener('focus', onVisible);
+  removeEventListener('blur', onAway);
+  outside(false);
   document.documentElement.removeEventListener('pointerenter', onVisible);
   document.documentElement.removeAttribute('data-dg-refraction');
   started = false;

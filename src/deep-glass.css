@@ -1063,3 +1063,13 @@ dialog.dg-sheet::backdrop {
     backdrop-filter: none;
   }
 }
+
+/* while the pointer is on the browser's own bar, lenses on screen are redrawn whole (see runtime) */
+@keyframes dg-redraw {
+  to {
+    scale: 1.0001;
+  }
+}
+:root[data-dg-outside] [data-dg-refracts] {
+  animation: dg-redraw 0.25s linear infinite alternate;
+}
