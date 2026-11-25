@@ -687,7 +687,7 @@ button.dg-tile {
   border-radius: 26px;
 }
 
-.dg-menu > :is([role^='menuitem'], button, a) {
+.dg-menu :is([role^='menuitem'], [role='option'], button, a) {
   position: relative;
   display: flex;
   align-items: center;
@@ -705,7 +705,7 @@ button.dg-tile {
   cursor: pointer;
 }
 
-.dg-menu > :is([role^='menuitem'], button, a) > svg {
+.dg-menu :is([role^='menuitem'], [role='option'], button, a) > svg {
   width: 18px;
   height: 18px;
   opacity: 0.8;
@@ -721,6 +721,205 @@ button.dg-tile {
 .dg-menu .dg-droplet {
   border-radius: 20px;
   --dg-tint: color-mix(in oklab, var(--dg-tone-strong) 85%, transparent);
+}
+
+.dg-menu :is([role^='menuitem'], [role='option'], button, a):focus {
+  outline: none; /* the drop shows it */
+}
+
+.dg-menu :is(:disabled, [aria-disabled='true']) {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.dg-menu [data-danger] {
+  color: var(--dg-danger, #ffb4b4);
+}
+
+.dg-menu kbd {
+  margin-left: auto;
+  padding-left: 20px;
+  font: inherit;
+  font-size: 13px;
+  opacity: 0.6;
+}
+
+.dg-menu__label {
+  padding: 10px 14px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.65;
+}
+
+/* checked, selected */
+.dg-menu :is([role='menuitemcheckbox'], [role='menuitemradio'], [role='option'])::after {
+  content: '';
+  box-sizing: border-box;
+  flex: none;
+  width: 7px;
+  height: 12px;
+  margin: -3px 4px 0 auto;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  rotate: 45deg;
+  opacity: 0;
+}
+
+.dg-menu :is([aria-checked='true'], [aria-selected='true'])::after {
+  opacity: 1;
+}
+
+/* a long list scrolls inside the glass */
+.dg-menu__scroll {
+  display: flex;
+  flex-direction: column;
+  max-height: min(340px, calc(var(--dg-menu-max, 340px) - 12px));
+  border-radius: 20px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.dg-menu__scroll > * {
+  flex: none;
+}
+
+/* ---------- dropdown: a menu that drops down from a button (popover + popovertarget) ---------- */
+
+.dg-chevron {
+  box-sizing: border-box;
+  flex: none;
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin: -4px 3px 0;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  rotate: 45deg;
+  opacity: 0.8;
+  transition:
+    rotate 0.35s var(--dg-ease),
+    translate 0.35s var(--dg-ease);
+}
+
+[aria-expanded='true'] > .dg-chevron {
+  rotate: -135deg;
+  translate: 0 4px;
+}
+
+.dg-menu[popover] {
+  /* it lies over anything: frosted and smoked enough to read */
+  --dg-blur: 9;
+  position: fixed;
+  inset: auto;
+  box-sizing: border-box;
+  max-width: calc(100vw - 16px);
+  margin: 0;
+  border: 0;
+  overflow: visible;
+  outline: none;
+  /* it is scaled, never faded: an element that fades is cut off from the page behind it, and the
+     glass inside it would go blank. Its surface and its items fade, one by one */
+  transition:
+    scale 0.4s var(--dg-ease),
+    overlay 0.4s allow-discrete,
+    display 0.4s allow-discrete;
+}
+
+.dg-menu[popover]:not(.dg--light) > .dg-surface {
+  --dg-tint: var(--dg-menu-tint, rgb(18 22 44 / 0.42));
+}
+
+.dg-menu[popover]:not(:popover-open) {
+  display: none;
+  scale: 0.9;
+  transition-duration: 0.16s;
+  transition-timing-function: ease-in;
+  pointer-events: none;
+}
+
+.dg-menu[popover] > :not(.dg-droplet) {
+  transition: opacity 0.2s;
+}
+
+.dg-menu[popover]:not(:popover-open) > * {
+  opacity: 0;
+  transition-duration: 0.14s;
+}
+
+@starting-style {
+  .dg-menu[popover]:popover-open {
+    scale: 0.8;
+  }
+  .dg-menu[popover]:popover-open > :not(.dg-droplet) {
+    opacity: 0;
+  }
+}
+
+/* ---------- select ---------- */
+
+.dg-select {
+  --dg-bezel: 16;
+  --dg-blur: 3;
+  display: inline-flex;
+  min-width: 180px;
+  border-radius: 999px;
+}
+
+.dg-select > select,
+.dg-select__button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dg-select > select > *,
+.dg-select > select option {
+  color: #111;
+}
+
+/* the native select holds the value, the button shows it */
+.dg-select:has(> .dg-select__button) > select {
+  position: absolute;
+  inset: auto auto 0 50%;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  padding: 0;
+  opacity: 0;
+  appearance: none;
+  pointer-events: none;
+}
+
+.dg-select__value {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dg-select__button:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--dg-accent) 80%, white);
+  outline-offset: 2px;
+}
+
+.dg-select__button:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 /* pressed in place (toolbars, menus): it sinks a little and brightens */
@@ -1052,7 +1251,7 @@ dialog.dg-sheet::backdrop {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :where(.dg-button, .dg-icon, .dg-chip, [data-dg-press], .dg-toast, dialog.dg-sheet) {
+  :where(.dg-button, .dg-icon, .dg-chip, [data-dg-press], .dg-toast, dialog.dg-sheet, .dg-menu, .dg-menu > *, .dg-chevron) {
     transition-duration: 0.01s !important;
   }
 }

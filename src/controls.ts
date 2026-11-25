@@ -1,3 +1,4 @@
+import { dropdown, ITEMS, select } from './dropdown';
 import { defineControl, demote, refresh } from './runtime';
 import { prefersReducedMotion } from './support';
 
@@ -18,7 +19,18 @@ const span = (className: string) => {
 function boxOf(item: Element, root: HTMLElement): Box {
   const r = item.getBoundingClientRect();
   const o = root.getBoundingClientRect();
-  return { x: r.left - o.left - root.clientLeft, y: r.top - o.top - root.clientTop, w: r.width, h: r.height };
+  // the group may be scaled (a menu growing out of its button)
+  const k = o.width / root.offsetWidth || 1;
+  // in a list that scrolls: the part of the item that shows
+  const clip = item.closest('.dg-menu__scroll')?.getBoundingClientRect();
+  const top = clip ? Math.max(r.top, clip.top) : r.top;
+  const bottom = clip ? Math.min(r.bottom, clip.bottom) : r.bottom;
+  return {
+    x: (r.left - o.left) / k - root.clientLeft,
+    y: (top - o.top) / k - root.clientTop,
+    w: r.width / k,
+    h: Math.max(0, bottom - top) / k,
+  };
 }
 
 /**
@@ -343,13 +355,28 @@ function hoverGroup(itemSelector: string) {
     const drop = new Droplet(root);
     const itemOf = (t: EventTarget | null) => {
       const item = (t as Element | null)?.closest?.<HTMLElement>(itemSelector);
-      return item && root.contains(item) && !item.matches(':disabled') ? item : null;
+      return item && root.contains(item) && !item.matches(':disabled, [aria-disabled="true"]') ? item : null;
     };
+    let current: HTMLElement | null = null;
     const show = (e: Event) => {
       const item = itemOf(e.target);
-      if (item) drop.to(boxOf(item, root));
+      if (!item) return;
+      current = item;
+      drop.to(boxOf(item, root));
     };
-    const hide = () => drop.to(null);
+    const hide = () => {
+      current = null;
+      drop.to(null);
+    };
+    // a list that scrolls: the drop stays on its item, until it scrolls out of sight
+    const scroll = () => {
+      if (!current) return;
+      const box = boxOf(current, root);
+      drop.to(box.h > 4 ? box : null, true);
+    };
+    const toggled = (e: Event) => {
+      if (e.target === root && (e as ToggleEvent).newState === 'closed') hide();
+    };
     // a press, not a lift: the drop stays inside its toolbar or menu
     const down = (e: PointerEvent) => itemOf(e.target) && drop.press(true);
     const up = () => drop.press(false);
@@ -358,6 +385,8 @@ function hoverGroup(itemSelector: string) {
     };
     root.addEventListener('pointerover', show);
     root.addEventListener('pointerleave', hide);
+    root.addEventListener('scroll', scroll, true);
+    root.addEventListener('beforetoggle', toggled);
     root.addEventListener('focusin', show);
     root.addEventListener('focusout', blur);
     root.addEventListener('pointerdown', down);
@@ -366,6 +395,8 @@ function hoverGroup(itemSelector: string) {
     return () => {
       root.removeEventListener('pointerover', show);
       root.removeEventListener('pointerleave', hide);
+      root.removeEventListener('scroll', scroll, true);
+      root.removeEventListener('beforetoggle', toggled);
       root.removeEventListener('focusin', show);
       root.removeEventListener('focusout', blur);
       root.removeEventListener('pointerdown', down);
@@ -495,6 +526,16 @@ function slider(root: HTMLElement) {
   };
 }
 
+/** a menu, on the page or (with the `popover` attribute) dropping down from a button */
+function menu(root: HTMLElement) {
+  const ungroup = hoverGroup(ITEMS)(root);
+  const undrop = root.hasAttribute('popover') ? dropdown(root) : null;
+  return () => {
+    undrop?.();
+    ungroup();
+  };
+}
+
 let installed = false;
 
 /** registers the components with the runtime (called by deepGlass(): no reliance on import side effects) */
@@ -504,7 +545,8 @@ export function installControls(): void {
   defineControl('.dg-segmented', choiceGroup('radio'));
   defineControl('.dg-tabbar', choiceGroup('tab'));
   defineControl('.dg-toolbar', hoverGroup('button, a, [role="button"]'));
-  defineControl('.dg-menu', hoverGroup('[role^="menuitem"], button, a'));
+  defineControl('.dg-menu', menu);
+  defineControl('.dg-select', select);
   defineControl('.dg-switch', toggleSwitch);
   defineControl('.dg-slider', slider);
 }

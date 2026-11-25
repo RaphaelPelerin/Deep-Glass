@@ -80,6 +80,18 @@ Or with a `<script>` tag, which starts on its own:
 <div class="dg dg-toolbar" role="toolbar"><button aria-label="Edit">…</button><hr /><button aria-label="Delete">…</button></div>
 <div class="dg dg-menu" role="menu"><button role="menuitem">Copy</button><hr /><button role="menuitem">Delete</button></div>
 
+<!-- a dropdown: a menu with `popover`, and a button that points to it -->
+<button class="dg dg-button" popovertarget="actions">Actions <span class="dg-chevron"></span></button>
+<div class="dg dg-menu" popover role="menu" id="actions">
+  <button role="menuitem">Rename<kbd>F2</kbd></button>
+  <button role="menuitemcheckbox" aria-checked="true">Sidebar</button>
+  <hr />
+  <button role="menuitem" data-danger>Delete</button>
+</div>
+
+<!-- a select: the native one keeps the value -->
+<div class="dg dg-select"><select aria-label="City"><option>Paris</option><option>Tokyo</option></select></div>
+
 <!-- a switch and a slider: their thumbs turn into lenses while you hold them -->
 <label class="dg-switch"><input type="checkbox" /> Wi-Fi</label>
 <div class="dg-slider"><input type="range" aria-label="Volume" /></div>
@@ -87,6 +99,8 @@ Or with a `<script>` tag, which starts on its own:
 <!-- a sheet, on a native dialog -->
 <dialog class="dg dg-sheet">…</dialog>
 ```
+
+Dropdowns use the browser's popovers: they close on Escape or a click outside, and lie above everything. The script places them by their button (`data-align="start"`, `center` or `end`; above it when there is no room), handles the keyboard, and ticks `menuitemcheckbox` and `menuitemradio` items, with a `dg:change` event (`detail: { value, checked }`). `data-dg-keep` on an item or the menu keeps it open after a click. Wrap a long list of items in `<div class="dg-menu__scroll">`. A `dg-select` needs no code of its own: its `<select>` fires `input` and `change` as usual, and stays native where popovers are missing.
 
 Segmented controls and tab bars fire a `dg:change` event (`detail: { index, value }`, `value` from `data-value` or the label). Switches and sliders are real inputs: forms, `change` events and the keyboard work as usual.
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- **Dropdowns**: a `dg-menu` with the `popover` attribute drops down from the button that points to it (`popovertarget`). It grows out of its button, stays inside the screen, and has keyboard support, checkable items, shortcuts, labels and a danger style.
+- **Select**: `dg-select` around a native `<select>`, with groups and long lists that scroll inside the glass.
+
 ## 0.1.0 (2026-11-17)
 
 First release.

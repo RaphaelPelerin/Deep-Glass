@@ -204,6 +204,51 @@
           </div>
 
           <div class="spot">
+            <h3>Dropdowns</h3>
+            <div class="row-wrap">
+              <button class="dg dg-button" type="button" popovertarget="dd-actions">Actions <span class="dg-chevron" aria-hidden="true"></span></button>
+              <button class="dg dg-button" type="button" popovertarget="dd-view">View <span class="dg-chevron" aria-hidden="true"></span></button>
+              <button class="dg dg-icon" type="button" aria-label="Account" popovertarget="dd-user"><i data-icon="user"></i></button>
+            </div>
+            <div class="dg dg-menu" popover role="menu" id="dd-actions" aria-label="Actions">
+              <button role="menuitem" type="button" data-toast="Renamed"><i data-icon="edit"></i>Rename<kbd>F2</kbd></button>
+              <button role="menuitem" type="button" data-toast="Duplicated"><i data-icon="copy"></i>Duplicate<kbd>Ctrl D</kbd></button>
+              <button role="menuitem" type="button" data-toast="Shared"><i data-icon="share"></i>Share</button>
+              <button role="menuitem" type="button" disabled><i data-icon="mail"></i>Send by mail</button>
+              <hr />
+              <button role="menuitem" type="button" data-danger data-toast="Deleted"><i data-icon="trash"></i>Delete</button>
+            </div>
+            <div class="dg dg-menu" popover role="menu" id="dd-view" aria-label="View">
+              <div class="dg-menu__label">Show</div>
+              <button role="menuitemcheckbox" aria-checked="true" type="button">Sidebar</button>
+              <button role="menuitemcheckbox" aria-checked="false" type="button">Hidden files</button>
+              <hr />
+              <div class="dg-menu__label">Layout</div>
+              <button role="menuitemradio" aria-checked="true" type="button">Grid</button>
+              <button role="menuitemradio" aria-checked="false" type="button">List</button>
+              <button role="menuitemradio" aria-checked="false" type="button">Columns</button>
+            </div>
+            <div class="dg dg-menu" popover role="menu" id="dd-user" data-align="end" aria-label="Account">
+              <button role="menuitem" type="button" data-toast="Profile"><i data-icon="user"></i>Profile</button>
+              <button role="menuitem" type="button" data-toast="Notifications"><i data-icon="bell"></i>Notifications</button>
+              <button role="menuitem" type="button" data-toast="Settings"><i data-icon="sliders"></i>Settings</button>
+            </div>
+            <p class="hint">Arrow keys, Home and End work, or type the start of a label.</p>
+          </div>
+
+          <div class="spot">
+            <h3>Select</h3>
+            <div class="dg dg-select">
+              <select aria-label="City" id="city">
+                <optgroup label="Europe"><option>Amsterdam</option><option>Berlin</option><option>Lisbon</option><option selected>Paris</option><option>Rome</option></optgroup>
+                <optgroup label="America"><option>Montreal</option><option>New York</option><option>São Paulo</option></optgroup>
+                <optgroup label="Asia"><option>Seoul</option><option>Singapore</option><option>Tokyo</option></optgroup>
+              </select>
+            </div>
+            <p class="hint">A real select inside: forms and change events work as usual.</p>
+          </div>
+
+          <div class="spot">
             <h3>Toasts and sheets</h3>
             <div class="row-wrap">
               <button class="dg dg-button" type="button" id="show-toast"><i data-icon="bell"></i>Toast</button>
