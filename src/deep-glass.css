@@ -1368,6 +1368,7 @@ dialog.dg-sheet::backdrop {
 
 .dg-table__sort {
   display: inline-flex;
+  vertical-align: middle;
   align-items: center;
   gap: 8px;
   margin: -6px -10px;
@@ -1422,6 +1423,113 @@ dialog.dg-sheet::backdrop {
 
 [aria-sort='descending'] > .dg-table__sort::after {
   opacity: 1;
+}
+
+/* columns to resize: one line per row, what is cut ends with an ellipsis */
+.dg-table[data-resize] td {
+  white-space: var(--dg-table-wrap, nowrap);
+}
+
+.dg-table[data-sized] table {
+  box-sizing: border-box;
+  width: var(--dg-table-width, 100%);
+  table-layout: fixed;
+}
+
+.dg-table[data-sized] td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dg-table[data-sized] .dg-table__check {
+  overflow: visible;
+}
+
+.dg-table__label {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dg-table[data-resize] .dg-table__sort {
+  max-width: calc(100% + 20px);
+  box-sizing: border-box;
+}
+
+.dg-table[data-resize] .dg-table__sort::after {
+  flex: none;
+}
+
+.dg-table__edge {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: -8px;
+  width: 16px;
+  outline: none;
+  cursor: col-resize;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dg-table th:last-child > .dg-table__edge {
+  inset-inline-end: 0;
+}
+
+.dg-table__edge::before {
+  content: '';
+  position: absolute;
+  top: calc(50% - 9px);
+  inset-inline-start: 7px;
+  width: 2px;
+  height: 18px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.18;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.dg-table th:last-child > .dg-table__edge::before {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+}
+
+.dg-table__scroll:has(.dg-table__edge:hover) .dg-table__edge::before,
+.dg-table thead:hover .dg-table__edge::before {
+  opacity: 0.4;
+}
+
+.dg-table .dg-table__edge:is(:hover, :focus-visible, [data-active])::before {
+  opacity: 1;
+}
+
+.dg-table__edge:focus-visible::before {
+  outline: 2px solid color-mix(in oklab, var(--dg-accent) 80%, white);
+  outline-offset: 2px;
+}
+
+.dg-table__edge[data-active]::before {
+  top: 0;
+  height: var(--dg-edge, 100%);
+  border-radius: 0;
+}
+
+.dg-table[data-resizing] {
+  cursor: col-resize;
+}
+
+@media (pointer: coarse) {
+  .dg-table__edge {
+    inset-inline-end: -14px;
+    width: 28px;
+  }
+  .dg-table__edge::before {
+    inset-inline-start: 13px;
+    opacity: 0.4;
+  }
 }
 
 .dg-table__check {
@@ -1598,6 +1706,22 @@ dialog.dg-sheet::backdrop {
   --dg-badge: 251 113 133;
 }
 
+/* it stays a pill in a column too narrow for it */
+.dg-table[data-resize] .dg-badge {
+  display: inline-block;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+.dg-table[data-resize] .dg-badge::before {
+  display: inline-block;
+  margin-inline-end: 7px;
+  vertical-align: 1px;
+}
+
 /* narrow: each row becomes a block, each cell says which column it is */
 .dg-table--stack {
   container-type: inline-size;
@@ -1613,6 +1737,17 @@ dialog.dg-sheet::backdrop {
   }
   .dg-table--stack :is(table, tbody) {
     display: block;
+  }
+  .dg-table--stack[data-sized] :is(table, td) {
+    width: auto;
+    overflow: visible;
+  }
+  .dg-table--stack[data-resize] td {
+    white-space: normal;
+  }
+  .dg-table--stack colgroup,
+  .dg-table--stack .dg-table__edge {
+    display: none;
   }
   .dg-table--stack tr:not([data-dg-out]) {
     position: relative;

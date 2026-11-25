@@ -1,3 +1,4 @@
+import { resizable } from './columns';
 import { Droplet } from './controls';
 
 type Direction = 'ascending' | 'descending';
@@ -46,7 +47,7 @@ function compare(a: string | number, b: string | number): number {
  *
  * A drop glides under the hovered row. `th[data-sort]` sorts (text, number or date), `data-select`
  * adds a checkbox per row, `data-page-size` splits the rows into pages, and any input with
- * `data-dg-search="<id of the table>"` filters them. Rows added or changed later are picked up.
+ * `data-dg-search="<id of the table>"` filters them; `data-resize` gives the columns an edge to drag. Rows added or changed later are picked up.
  */
 export function table(root: HTMLElement): (() => void) | void {
   const el = root.querySelector('table');
@@ -75,6 +76,7 @@ export function table(root: HTMLElement): (() => void) | void {
   const drop = new Droplet(scroller);
   undo.push(() => drop.destroy());
   let hovered: HTMLElement | null = null;
+  const hinted = new WeakSet<Element>();
   const highlight = (row: HTMLElement | null, immediate = false) => {
     hovered = row;
     if (!row) {
@@ -111,6 +113,14 @@ export function table(root: HTMLElement): (() => void) | void {
   on<PointerEvent>(body, 'pointerover', (e) => {
     const row = rowOf(e.target);
     if (row && row !== hovered && e.pointerType !== 'touch') highlight(row);
+    // what a narrow column cuts off
+    const cell = root.hasAttribute('data-sized') ? (e.target as Element).closest('td') : null;
+    if (cell && (!cell.title || hinted.has(cell))) {
+      const cut = cell.scrollWidth > cell.clientWidth;
+      cell.title = cut ? (cell.textContent?.trim() ?? '') : '';
+      if (!cut) cell.removeAttribute('title');
+      hinted.add(cell);
+    }
   });
   on(root, 'pointerleave', () => highlight(null));
   on(el.tHead ?? el, 'pointerenter', () => el.tHead && highlight(null));
@@ -311,6 +321,14 @@ export function table(root: HTMLElement): (() => void) | void {
       last = row;
       changed();
     });
+  }
+
+  if (root.hasAttribute('data-resize')) {
+    const columns = resizable(root, el, scroller, heads(), label, (head, widths) =>
+      emit('dg:resize', { column: head.cellIndex - offset(), widths: widths.slice(offset()) }),
+    );
+    // before the headers get back what they held
+    undo.unshift(columns);
   }
 
   /** rows that just came: their place, their checkbox, the labels of their cells */

@@ -3,7 +3,7 @@
 **Deep glass for the web.** UI components that refract what is behind them through a curved rim, split it into colors at the edges, catch the light where your pointer is, and stretch like a drop when you press them.
 
 [![npm](https://img.shields.io/npm/v/deep-glass?color=8ab4ff)](https://www.npmjs.com/package/deep-glass)
-[![gzip](https://img.shields.io/badge/gzip-16%20kB%20js%20%2B%206%20kB%20css-8ab4ff)](#size)
+[![gzip](https://img.shields.io/badge/gzip-18%20kB%20js%20%2B%207%20kB%20css-8ab4ff)](#size)
 [![license](https://img.shields.io/badge/license-MIT-8ab4ff)](LICENSE)
 
 **[Live demo →](https://deep-glass.vercel.app)** Drag the loupe, press the buttons, switch to dark glass.
@@ -123,12 +123,18 @@ A `dg-table` enhances the `<table>` you write, every part is optional:
 | `td` | `data-value` | What to sort by, when it isn't what the cell shows |
 | `.dg-table` | `data-select` | A checkbox per row (Shift for a range); selected rows have `data-selected` |
 | `.dg-table` | `data-page-size` | Rows per page |
+| `.dg-table` | `data-resize` | An edge to drag on each column. `="remember"` keeps the widths between visits (needs an `id`) |
+| `th` | `data-resize="none"` | Leaves this column as it is. The narrowest a column gets is its `min-width`, 80px without one |
 | any `input` | `data-dg-search="id"` | Filters the rows of that table, whatever the case and the accents |
 | `.dg-table` | `dg-table--stack` | Under 560px wide, each row becomes a block |
 | `.dg-table` | `dg-table--scroll` | The rows scroll under the header (`--dg-table-height`) |
-| `.dg-table` | `data-label-empty`, `-selected`, `-all`, `-row`, `-prev`, `-next` | Its texts, to translate |
+| `.dg-table` | `data-label-empty`, `-selected`, `-all`, `-row`, `-resize`, `-prev`, `-next` | Its texts, to translate |
 
-It fires `dg:sort` (`{ column, direction }`; `preventDefault()` to sort the data yourself, with a framework or a server), `dg:select` (`{ rows }`) and `dg:page` (`{ page }`, from 0). Rows added, removed or edited later are picked up. `dg-badge` (`--success`, `--warning`, `--danger`), `dg-check` and `dg-table__action` are there for its cells.
+It fires `dg:sort` (`{ column, direction }`; `preventDefault()` to sort the data yourself, with a framework or a server), `dg:select` (`{ rows }`), `dg:resize` (`{ column, widths }`) and `dg:page` (`{ page }`, from 0). Rows added, removed or edited later are picked up.
+
+Resizing a column keeps the table as wide as its place: the next columns make room, down to their minimum, then the table grows and scrolls. A double click on an edge fits the column to what it holds; with the keyboard, the arrows move a focused edge (Shift for more), Enter fits, Home makes the column as narrow as it gets, and Escape drops a drag. Cells stay on one line (`--dg-table-wrap: normal` to let them wrap).
+
+`dg-badge` (`--success`, `--warning`, `--danger`), `dg-check` and `dg-table__action` are there for its cells.
 
 Segmented controls and tab bars fire a `dg:change` event (`detail: { index, value }`, `value` from `data-value` or the label). Switches and sliders are real inputs: forms, `change` events and the keyboard work as usual.
 
@@ -226,7 +232,7 @@ On the demo page, 28 refracting panes scroll at about 80% of the frame rate of t
 
 ## Size
 
-About 16 kB of JavaScript and 6 kB of CSS, gzipped. No dependencies.
+About 18 kB of JavaScript and 7 kB of CSS, gzipped. No dependencies.
 
 ## Pairs well with
 
