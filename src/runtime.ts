@@ -22,6 +22,7 @@ export type Setup = (el: HTMLElement) => (() => void) | void;
 export interface RuntimeOptions {
   refraction: boolean;
   light: boolean;
+  adaptive: boolean;
 }
 
 const panes = new Map<HTMLElement, Pane>();
@@ -30,7 +31,7 @@ const onScreen = new Set<HTMLElement>();
 const cleanups = new Map<HTMLElement, () => void>();
 const controls: [string, Setup][] = [];
 const roots = new Set<ParentNode>();
-let options: RuntimeOptions = { refraction: true, light: true };
+let options: RuntimeOptions = { refraction: true, light: true, adaptive: true };
 let refract = false;
 let started = false;
 
@@ -56,7 +57,9 @@ function updatePane(pane: Pane) {
   const { el, w, h } = pane;
   if (!el.isConnected) return;
   const cs = getComputedStyle(el);
-  const strength = num(cs, '--dg-refraction', 1);
+  // slow device, last step: small panes stay frosted (see adapt)
+  const small = quality >= 3 && Math.min(w, h) <= SMALL;
+  const strength = small ? 0 : num(cs, '--dg-refraction', 1);
   let next: { key: string; id: string } | null = null;
   if (refract && strength > 0 && w >= 2 && h >= 2) {
     const bezel = num(cs, '--dg-bezel', 24);
@@ -72,7 +75,7 @@ function updatePane(pane: Pane) {
       },
       {
         blur: num(cs, '--dg-blur', 1.5) + num(cs, '--dg-frost', 0),
-        dispersion: num(cs, '--dg-dispersion', 0.5),
+        dispersion: quality >= 1 ? 0 : num(cs, '--dg-dispersion', 0.5),
         saturation: num(cs, '--dg-saturation', 1.7),
         brightness: num(cs, '--dg-brightness', 1.05),
       },
@@ -173,17 +176,111 @@ function set(el: HTMLElement, values: Record<string, string>) {
   shown.set(el, last);
 }
 
-/** the light as CSS values: a direction (rounded so tiny moves change nothing) and its angle */
-function direction(lx: number, ly: number): Record<string, string> {
-  const step = Math.PI / 60;
-  const a = Math.round(Math.atan2(ly, lx) / step) * step;
-  return {
-    '--dg-lx': Math.cos(a).toFixed(2),
-    '--dg-ly': Math.sin(a).toFixed(2),
-    // a gradient pointing away from the light starts bright on the lit side
-    '--dg-angle': `${Math.round((Math.atan2(-Math.cos(a), Math.sin(a)) * 180) / Math.PI)}deg`,
-  };
+/** the light as a CSS gradient angle, rounded so tiny moves change nothing */
+function direction(angle: number): Record<string, string> {
+  const step = Math.PI / 24;
+  const a = Math.round(angle / step) * step;
+  // a gradient pointing away from the light starts bright on the lit side
+  return { '--dg-angle': `${Math.round((Math.atan2(-Math.cos(a), Math.sin(a)) * 180) / Math.PI)}deg` };
 }
+
+/*
+ * The glare: a spot of light drawn once, then only moved and faded, which the GPU does without
+ * painting the pane again. Made for a pane the first time the light reaches it.
+ */
+const glares = new WeakMap<HTMLElement, HTMLElement>();
+/** these can't hold a glare */
+const CHILDLESS = 'input, textarea, select, img, video, canvas, iframe, svg';
+
+function glareIn(el: HTMLElement): HTMLElement | null {
+  const made = glares.get(el);
+  if (made?.parentElement?.parentElement === el) return made;
+  if (el.matches(CHILDLESS)) return null;
+  const clip = document.createElement('span');
+  clip.className = 'dg-glare';
+  clip.setAttribute('aria-hidden', 'true');
+  const spot = document.createElement('span');
+  clip.append(spot);
+  el.append(clip);
+  glares.set(el, spot);
+  return spot;
+}
+
+function drawGlare(el: HTMLElement, l: Light) {
+  const on = l.near > 0 || pressed?.el === el;
+  const spot = on ? glareIn(el) : glares.get(el);
+  if (!spot) return;
+  set(spot, {
+    ...(on ? { transform: `translate(${Math.round(l.x)}px, ${Math.round(l.y)}px)` } : null),
+    opacity: (Math.round(l.near * 25) / 25).toString(),
+  });
+  spot.toggleAttribute('data-on', on);
+}
+
+function dropGlare(el: HTMLElement) {
+  glares.get(el)?.parentElement?.remove();
+  glares.delete(el);
+  moving.delete(el);
+}
+
+// ---------- quality: lighter on devices that can't keep up ----------
+
+/** 0: everything, 1: no color fringes, 2: light on one pane at a time, 3: no refraction on small panes */
+let quality = 0;
+/** panes this small (their short side, px) stop refracting at the last step */
+const SMALL = 56;
+/** frames that take longer than this on average are too slow: 45 a second */
+const SLOW = 1 / 45;
+/** frames measured before a decision */
+const SAMPLE = 40;
+let sampled = 0;
+let sampledTime = 0;
+/** slow samples in a row: one is bad luck */
+let slow = 0;
+/** good frames since the last change, and how many it takes to try a step back up */
+let good = 0;
+let patience = 400;
+/** the last change was a step up */
+let trying = false;
+
+/** called for every frame that follows another while the light moves: the moments that lag */
+function adapt(dt: number) {
+  // a longer one is a tab coming back or the page busy with something else; lenses being made are
+  // no measure of what showing them costs
+  if (!options.adaptive || dt > 0.2 || queued.size) return;
+  sampled++;
+  sampledTime += dt;
+  if (sampled < SAMPLE) return;
+  const mean = sampledTime / sampled;
+  sampled = 0;
+  sampledTime = 0;
+  if (mean > SLOW) {
+    if (++slow < 2 || quality === 3) return;
+    // tried, and too much for this device: longer before the next try
+    if (trying) patience *= 4;
+    trying = false;
+    slow = good = 0;
+    setQuality(quality + 1);
+    return;
+  }
+  slow = 0;
+  if (quality === 0 || mean > 1 / 50) return;
+  good += SAMPLE;
+  if (good < patience) return;
+  good = 0;
+  trying = true;
+  setQuality(quality - 1);
+}
+
+function setQuality(level: number) {
+  quality = level;
+  if (level) document.documentElement.dataset.dgQuality = String(level);
+  else delete document.documentElement.dataset.dgQuality;
+  retarget = true;
+  refreshAll();
+}
+
+export const qualityLevel = (): number => quality;
 
 /** where the light of a pane is, and where it goes: it has inertia, it never jumps */
 interface Light {
@@ -210,6 +307,10 @@ const SLIDE = 0.045;
 const FADE = 0.09;
 /** a glare out for this long starts again where the pointer is (its fade has ended by then), ms */
 const OUT = 250;
+/** the light reaches this many panes at once, the nearest ones */
+const REACH = 4;
+/** and turns the rim of this many: a rim that turns is painted again, a glare is only moved */
+const TURNS = 2;
 
 const lights = new WeakMap<HTMLElement, Light>();
 /** panes whose light is on its way */
@@ -218,6 +319,8 @@ const moving = new Set<HTMLElement>();
 let retarget = true;
 let lightAt = 0;
 let lightTick = 0;
+/** the frame before this one lit panes too: the time between them is a real frame time */
+let following = false;
 
 /** the shortest way from an angle to another */
 const turn = (from: number, to: number) => {
@@ -238,9 +341,32 @@ function lightOf(el: HTMLElement): Light {
 function aim(now: number) {
   const els = [...onScreen];
   const boxes = els.map((el) => el.getBoundingClientRect());
+  const nears = boxes.map((r) => {
+    if (!pointer) return 0;
+    // 1 over the pane, fading out within a pane size around it
+    const gap = Math.hypot(
+      Math.max(r.left - pointer.x, 0, pointer.x - r.right),
+      Math.max(r.top - pointer.y, 0, pointer.y - r.bottom),
+    );
+    return Math.max(0, 1 - gap / Math.max(120, Math.min(r.width, r.height)));
+  });
+  const reach = quality >= 2 ? 1 : REACH;
+  const reached = els.map((_, i) => i).filter((i) => nears[i] > 0);
+  const turns = new Set(reached);
+  if (reached.length > TURNS) {
+    // the nearest; among those under the pointer, the smallest: a button before the card it is in
+    reached.sort((a, b) => nears[b] - nears[a] || boxes[a].width * boxes[a].height - boxes[b].width * boxes[b].height);
+    for (const i of reached.slice(reach)) nears[i] = 0;
+    for (const i of reached.slice(TURNS)) turns.delete(i);
+  }
   for (let i = 0; i < els.length; i++) {
     const el = els[i];
     const r = boxes[i];
+    if (pressed?.el === el) {
+      // held: lit until it is let go
+      lightOf(el).toNear = 1;
+      continue;
+    }
     if (tilt && !pointer) {
       const l = lightOf(el);
       l.toAngle = Math.atan2(tilt.y, tilt.x);
@@ -248,15 +374,7 @@ function aim(now: number) {
       moving.add(el);
       continue;
     }
-    let near = 0;
-    if (pointer) {
-      // 1 over the pane, fading out within a pane size around it
-      const gap = Math.hypot(
-        Math.max(r.left - pointer.x, 0, pointer.x - r.right),
-        Math.max(r.top - pointer.y, 0, pointer.y - r.bottom),
-      );
-      near = Math.max(0, 1 - gap / Math.max(120, Math.min(r.width, r.height)));
-    }
+    const near = nears[i];
     if (near <= 0 || !pointer) {
       // out of reach: the glare fades where it is, the rim turns back to its light at rest
       const l = lights.get(el);
@@ -270,16 +388,14 @@ function aim(now: number) {
     // the rim turns towards the pointer as it comes, all the way well before it touches
     const pull = Math.min(1, near * 1.6);
     const facing = Math.atan2(pointer.y - (r.top + r.height / 2), pointer.x - (r.left + r.width / 2));
-    l.toAngle = REST + turn(REST, facing) * pull * pull * (3 - 2 * pull);
+    l.toAngle = turns.has(i) ? REST + turn(REST, facing) * pull * pull * (3 - 2 * pull) : REST;
     l.toNear = near;
-    if (pressed?.el !== el) {
-      l.toX = pointer.x - r.left;
-      l.toY = pointer.y - r.top;
-      // the glare was out: it comes back here, it doesn't cross the pane from where it was
-      if (l.near === 0 && now - l.outAt > OUT) {
-        l.x = l.toX;
-        l.y = l.toY;
-      }
+    l.toX = pointer.x - r.left;
+    l.toY = pointer.y - r.top;
+    // the glare was out: it comes back here, it doesn't cross the pane from where it was
+    if (l.near === 0 && now - l.outAt > OUT) {
+      l.x = l.toX;
+      l.y = l.toY;
     }
     moving.add(el);
   }
@@ -288,6 +404,7 @@ function aim(now: number) {
 function lightUp(now: number) {
   lightFrame = 0;
   const dt = Math.min(0.05, Math.max(0.001, (now - lightAt) / 1000));
+  if (following) adapt((now - lightAt) / 1000);
   lightAt = now;
   if (retarget) {
     retarget = false;
@@ -320,17 +437,12 @@ function lightUp(now: number) {
     // each write repaints a lens: the panes by the pointer on every frame, the ones further away,
     // where the light is faint, one frame in three
     if (Math.max(l.near, l.toNear) < 0.7 && pressed?.el !== el && (lightTick + nth++) % 3) continue;
-    const values = direction(Math.cos(l.angle), Math.sin(l.angle));
-    values['--dg-near'] = (Math.round(l.near * 20) / 20).toString();
-    // held: the glare is under the finger (see pull)
-    if (pressed?.el !== el && l.toNear > 0) {
-      values['--dg-mx'] = `${Math.round(l.x)}px`;
-      values['--dg-my'] = `${Math.round(l.y)}px`;
-    }
-    set(el, values);
+    set(el, direction(l.angle));
+    drawGlare(el, l);
     if (turned && faded && slid) moving.delete(el);
   }
-  if (moving.size || retarget) lightFrame ||= requestAnimationFrame(lightUp);
+  following = moving.size > 0 || retarget;
+  if (following) lightFrame ||= requestAnimationFrame(lightUp);
 }
 
 const relight = () => {
@@ -343,11 +455,11 @@ const relight = () => {
 };
 
 /** the glare is put here at once (a press) */
-function glareAt(el: HTMLElement, x: number, y: number): Record<string, string> {
+function glareAt(el: HTMLElement, x: number, y: number) {
   const l = lightOf(el);
   l.x = l.toX = x;
   l.y = l.toY = y;
-  return { '--dg-mx': `${Math.round(x)}px`, '--dg-my': `${Math.round(y)}px` };
+  drawGlare(el, l);
 }
 
 const onPointerMove = (e: PointerEvent) => {
@@ -407,7 +519,9 @@ function onPointerDown(e: PointerEvent) {
   const r = el.getBoundingClientRect();
   pressed = { el, id: e.pointerId, left: r.left, top: r.top, w: r.width, h: r.height, x: e.clientX, y: e.clientY, frame: 0 };
   el.dataset.pressed = '';
-  set(el, glareAt(el, e.clientX - r.left, e.clientY - r.top));
+  const l = lightOf(el);
+  l.near = l.toNear = 1;
+  glareAt(el, e.clientX - r.left, e.clientY - r.top);
   addEventListener('pointermove', onPressMove, { passive: true });
   addEventListener('pointerup', onPressEnd);
   addEventListener('pointercancel', onPressEnd);
@@ -428,8 +542,8 @@ function pull() {
     '--dg-pull-y': `${py.toFixed(1)}px`,
     '--dg-sx': sx.toFixed(3),
     '--dg-sy': sy.toFixed(3),
-    ...glareAt(el, x - left - px, y - top - py),
   });
+  glareAt(el, x - left - px, y - top - py);
 }
 
 function onPressMove(e: PointerEvent) {
@@ -450,6 +564,15 @@ function onPressEnd(e: PointerEvent) {
     if (last) delete last[p];
   }
   pressed = null;
+  // a finger lifted lights nothing any more
+  if (e.pointerType === 'touch') pointer = null;
+  if (options.light) {
+    relight();
+  } else {
+    const l = lightOf(el);
+    l.near = l.toNear = 0;
+    drawGlare(el, l);
+  }
   removeEventListener('pointermove', onPressMove);
   removeEventListener('pointerup', onPressEnd);
   removeEventListener('pointercancel', onPressEnd);
@@ -497,7 +620,7 @@ export function demote(el: HTMLElement): void {
   if (lit.delete(el)) {
     visibility.unobserve(el);
     onScreen.delete(el);
-    moving.delete(el);
+    dropGlare(el);
   }
   el.style.removeProperty('--dg-filter');
   delete el.dataset.dgRefracts;
@@ -515,7 +638,7 @@ function detach(el: HTMLElement) {
   if (lit.delete(el)) {
     visibility.unobserve(el);
     onScreen.delete(el);
-    moving.delete(el);
+    dropGlare(el);
   }
   const cleanup = cleanups.get(el);
   if (cleanup) {

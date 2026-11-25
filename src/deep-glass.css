@@ -39,11 +39,9 @@
   --dg-dispersion: 0.5; /* color fringes along the rim, 0–1 */
   --dg-frost: 0; /* extra frosting for every pane, px */
 
-  /* light: a unit vector towards it (the pointer when there is one), and how close it is */
-  --dg-lx: -0.6;
-  --dg-ly: -0.8;
+  /* light: where it comes from (the pointer when there is one), and the strength of the glare */
   --dg-angle: 143deg;
-  --dg-near: 0;
+  --dg-glare: 0.9;
 }
 
 /*
@@ -116,12 +114,13 @@
   --dg-bezel: 24; /* width of the curved rim, px */
   --dg-blur: 1.5; /* frosting, px */
   --dg-magnify: 1; /* a loupe, for thumbs */
-  /* the rim: a hairline, the lit edge, the light bouncing off the far edge, a glow inside */
+  /* the rim: a hairline, the lit edge, the light bouncing off the far edge, a glow inside. Lit from
+     the top left, whatever the pointer does: these shadows are the costly part to paint */
   --dg-bevel:
     inset 0 0 0 1px rgb(255 255 255 / calc(0.1 * var(--dg-tone-rim))),
-    inset calc(var(--dg-lx) * -1.6px) calc(var(--dg-ly) * -1.6px) 1px -0.4px rgb(255 255 255 / calc(0.62 * var(--dg-tone-rim))),
-    inset calc(var(--dg-lx) * 1.4px) calc(var(--dg-ly) * 1.4px) 1.5px -0.6px rgb(255 255 255 / calc(0.3 * var(--dg-tone-rim))),
-    inset calc(var(--dg-lx) * -5px) calc(var(--dg-ly) * -5px) 12px -6px rgb(255 255 255 / calc(0.22 * var(--dg-tone-rim))),
+    inset 0.96px 1.28px 1px -0.4px rgb(255 255 255 / calc(0.62 * var(--dg-tone-rim))),
+    inset -0.84px -1.12px 1.5px -0.6px rgb(255 255 255 / calc(0.3 * var(--dg-tone-rim))),
+    inset 3px 4px 12px -6px rgb(255 255 255 / calc(0.22 * var(--dg-tone-rim))),
     inset 0 0 calc(var(--dg-bezel) * 0.8px) rgb(255 255 255 / calc(0.06 * var(--dg-tone-rim)));
 
   position: relative;
@@ -163,22 +162,33 @@
 }
 
 /* glare: a soft light where the pointer is, brighter as it comes close */
-:where(.dg)::after {
-  content: '';
+.dg-glare {
   position: absolute;
   inset: 0;
   z-index: 1;
   border-radius: inherit;
+  overflow: clip;
+  pointer-events: none;
+}
+
+.dg-glare > span {
+  position: absolute;
+  top: -140px;
+  left: -140px;
+  width: 280px;
+  height: 280px;
   background: radial-gradient(
-    circle 140px at var(--dg-mx, 30%) var(--dg-my, 0%),
-    rgb(255 255 255 / 0.2),
-    rgb(255 255 255 / 0.06) 45%,
+    closest-side,
+    rgb(255 255 255 / calc(0.2 * var(--dg-glare) * var(--dg-tone-glare))),
+    rgb(255 255 255 / calc(0.06 * var(--dg-glare) * var(--dg-tone-glare))) 45%,
     transparent 70%
   );
-  mix-blend-mode: plus-lighter;
-  opacity: calc(var(--dg-near) * 0.9 * var(--dg-tone-glare));
-  transition: opacity 0.15s;
-  pointer-events: none;
+  opacity: 0;
+}
+
+/* moved and faded by the GPU: the pane is not painted again */
+.dg-glare > span[data-on] {
+  will-change: transform, opacity;
 }
 
 /* tints */
@@ -227,15 +237,9 @@
     opacity 0.3s;
 }
 
-:where(.dg-button, .dg-icon, .dg-chip, [data-dg-press])[data-pressed]::after {
-  background: radial-gradient(
-    circle 90px at var(--dg-mx, 50%) var(--dg-my, 50%),
-    rgb(255 255 255 / 0.42),
-    rgb(255 255 255 / 0.1) 50%,
-    transparent 75%
-  );
-  opacity: 1;
-  transition: opacity 0.1s;
+:where(.dg-button, .dg-icon, .dg-chip, [data-dg-press])[data-pressed] > .dg-glare > span {
+  background: radial-gradient(circle 90px, rgb(255 255 255 / 0.42), rgb(255 255 255 / 0.1) 50%, transparent 75%);
+  opacity: 1 !important;
 }
 
 /* ---------- buttons ---------- */
@@ -371,7 +375,6 @@
   border-radius: 24px;
   color: var(--dg-text);
   background:
-    radial-gradient(circle 120px at var(--dg-mx, 50%) var(--dg-my, 0%), rgb(255 255 255 / calc(var(--dg-near) * 0.14)), transparent 70%) padding-box,
     linear-gradient(var(--dg-tone-tile), color-mix(in oklab, var(--dg-tone-tile) 60%, transparent)) padding-box,
     linear-gradient(
         var(--dg-angle),
@@ -382,9 +385,13 @@
       )
       border-box;
   box-shadow:
-    inset calc(var(--dg-lx) * -1px) calc(var(--dg-ly) * -1px) 1px -0.5px rgb(255 255 255 / calc(0.4 * var(--dg-tone-rim))),
+    inset 0.6px 0.8px 1px -0.5px rgb(255 255 255 / calc(0.4 * var(--dg-tone-rim))),
     0 8px 20px -12px rgb(0 0 0 / 0.35);
   text-decoration: none;
+}
+
+.dg-tile {
+  --dg-glare: 0.7;
 }
 
 a.dg-tile,

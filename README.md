@@ -161,6 +161,7 @@ const glass = deepGlass({
   root: document,   // where to look for glass; elements added later are picked up
   refraction: true, // false: frosted glass everywhere
   light: true,      // highlights face the pointer
+  adaptive: true,   // lighter effects when the page drops under 45 frames a second
 });
 
 glass.refraction;   // whether this browser really refracts
@@ -191,7 +192,8 @@ Glass is drawn by the GPU on every frame where it or what's behind it moves, so 
 
 - **Tiny lens maps.** The browser redraws each displacement map on every frame, at a cost that grows with its size. The bending is smooth, so maps hold only about 8 pixels across the rim and the GPU stretches them: a button's map is about 1,600 pixels, and a 420×530 card's is 12,000 instead of 117,000. Across the demo page that's 6 times fewer pixels to redraw on every frame.
 - **Fringes only where they show.** Color fringes take three passes instead of one, so they run only where they spread wider than a pixel, on clear glass.
-- **Light only where you are.** The pointer relights only the panes near it, with rounded values, and only when they change. Every box is read before anything is written.
+- **Light only where you are.** The pointer lights at most four panes, the nearest, and turns the rim of two. The glare is drawn once, then only moved and faded by the GPU, and the bevel's shadows never change. Every box is read before anything is written.
+- **Lighter where it has to be.** When the page stays under 45 frames a second while the light moves, effects go one step at a time: color fringes, then the light of the neighbors, then the refraction of small panes. They come back when there is room again. `adaptive: false` turns this off, `glass.quality` (0 to 3) tells the step.
 - **Nothing for what you can't see.** A pane gets its lens only when it comes within a screen of the viewport: a long page starts with the few lenses at the top. Resting switch and slider thumbs are opaque, so they get no lens until you hold them, and hidden drops aren't drawn. Maps are encoded off the main thread, and new lenses are built a few per frame.
 
 On the demo page, 28 refracting panes scroll at about 80% of the frame rate of the same page with no glass at all.

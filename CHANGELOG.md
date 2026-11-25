@@ -5,6 +5,8 @@
 - **Dropdowns**: a `dg-menu` with the `popover` attribute drops down from the button that points to it (`popovertarget`). It grows out of its button, stays inside the screen, and has keyboard support, checkable items, shortcuts, labels and a danger style.
 - **Submenus**: a menu row with its own `popovertarget`. They open on hover, forgive a pointer that cuts across other rows to reach them, flip at the edge of the screen, and follow the left and right arrows.
 - **Select**: `dg-select` around a native `<select>`, with groups and long lists that scroll inside the glass.
+- **Faster under the pointer**: about 30% less time per frame when moving over buttons. The glare is moved by the GPU instead of painted, the bevel is fixed, and the light reaches the four nearest panes. `--dg-lx`, `--dg-ly`, `--dg-mx`, `--dg-my` and `--dg-near` are gone (`--dg-glare` sets the strength of the glare).
+- **Adaptive quality** (`adaptive`, on by default): lighter effects on devices that can't keep up, `glass.quality` tells the step.
 - The light has inertia: a rim no longer flips, nor a glare jumps, when the pointer leaves a button on one side and comes back on the other.
 
 ## 0.1.0 (2026-11-17)
