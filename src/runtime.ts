@@ -3,8 +3,8 @@ import { canRefract, prefersReducedMotion } from './support';
 
 /** the glass material: these refract (or frost) what is behind them */
 export const GLASS = '.dg';
-/** lit by the pointer too, without glass of their own (tiles inside a card) */
-const LIT = '.dg, .dg-tile';
+/** lit by the pointer */
+const LIT = GLASS;
 /** squish, stretch towards the finger and spring back */
 const PRESSABLE = '.dg-button, .dg-icon, .dg-chip, [data-dg-press]';
 
@@ -207,6 +207,8 @@ function glareIn(el: HTMLElement): HTMLElement | null {
 }
 
 function drawGlare(el: HTMLElement, l: Light) {
+  // cards: no glare over what they hold
+  if (el.matches('.dg-card')) return;
   const on = l.near > 0 || pressed?.el === el;
   const spot = on ? glareIn(el) : glares.get(el);
   if (!spot) return;
