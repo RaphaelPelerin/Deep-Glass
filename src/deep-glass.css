@@ -114,6 +114,7 @@
   --dg-bezel: 24; /* width of the curved rim, px */
   --dg-blur: 1.5; /* frosting, px */
   --dg-magnify: 1; /* a loupe, for thumbs */
+  --dg-filter: initial; /* its own lens, set by the script: never the one of the glass it is in */
   /* the rim: a hairline, the lit edge, the light bouncing off the far edge, a glow inside. Lit from
      the top left, whatever the pointer does: these shadows are the costly part to paint */
   --dg-bevel:
@@ -530,6 +531,10 @@ button.dg-tile {
   transform-origin: center;
   pointer-events: none;
   will-change: transform;
+  /* it lies over the labels: with no lens (other browsers, no refraction, a lens being made) it
+     frosts nothing, or it would hide the one it marks */
+  -webkit-backdrop-filter: none;
+  backdrop-filter: var(--dg-filter, none);
   transition:
     opacity 0.25s,
     background-color 0.3s,
