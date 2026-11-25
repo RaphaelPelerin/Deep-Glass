@@ -258,6 +258,43 @@
             <p class="hint">A real select inside: forms and change events work as usual.</p>
           </div>
 
+          <div class="spot spot--wide">
+            <h3>Table</h3>
+            <div class="table-head">
+              <label class="dg dg-field"><i data-icon="search"></i><input type="search" placeholder="Search people" aria-label="Search people" data-dg-search="people" /></label>
+            </div>
+            <div class="dg dg-table dg-table--stack" id="people" data-select data-page-size="6">
+              <div class="dg-table__scroll">
+                <table>
+                  <thead>
+                    <tr><th scope="col" data-sort>Name</th><th scope="col" data-sort>Team</th><th scope="col" data-sort>Status</th><th scope="col" data-sort>City</th><th scope="col" data-sort="number">Budget</th><th scope="col" data-sort="date">Last seen</th><th scope="col"><span class="sr">Actions</span></th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><strong>Nova Chen</strong></td><td>Product design</td><td><span class="dg-badge dg-badge--success">Active</span></td><td>Paris</td><td>€4,820</td><td><time datetime="2026-11-18">18 Nov 2026</time></td><td><button class="dg-table__action" type="button" aria-label="Actions for Nova Chen" popovertarget="row-menu">⋯</button></td></tr>
+                    <tr><td><strong>Élise Martin</strong></td><td>Engineering</td><td><span class="dg-badge dg-badge--success">Active</span></td><td>Lyon</td><td>€6,150</td><td><time datetime="2026-11-21">21 Nov 2026</time></td><td><button class="dg-table__action" type="button" aria-label="Actions for Élise Martin" popovertarget="row-menu">⋯</button></td></tr>
+                    <tr><td><strong>Omar Haddad</strong></td><td>Engineering</td><td><span class="dg-badge dg-badge--warning">On leave</span></td><td>Casablanca</td><td>€5,400</td><td><time datetime="2026-10-02">2 Oct 2026</time></td><td><button class="dg-table__action" type="button" aria-label="Actions for Omar Haddad" popovertarget="row-menu">⋯</button></td></tr>
+                    <tr><td><strong>Sofia Rossi</strong></td><td>Marketing</td><td><span class="dg-badge dg-badge--success">Active</span></td><td>Milan</td><td>€3,980</td><td><time datetime="2026-11-12">12 Nov 2026</time></td><td><button class="dg-table__action" type="button" aria-label="Actions for Sofia Rossi" popovertarget="row-menu">⋯</button></td></tr>
+                    <tr><td><strong>Kenji Tanaka</strong></td><td>Research</td><td><span class="dg-badge dg-badge--danger">Left</span></td><td>Tokyo</td><td>€7,200</td><td><time datetime="2026-06-30">30 Jun 2026</time></td><td><button class="dg-table__action" type="button" aria-label="Actions for Kenji Tanaka" popovertarget="row-menu">⋯</button></td></tr>
+                    <tr><td><strong>Ana Souza</strong></td><td>Support</td><td><span class="dg-badge dg-badge--success">Active</span></td><td>São Paulo</td><td>€2,950</td><td><time datetime="2026-11-23">23 Nov 2026</time></td><td><button class="dg-table__action" type="button" aria-label="Actions for Ana Souza" popovertarget="row-menu">⋯</button></td></tr>
+                    <tr><td><strong>Liam Murphy</strong></td><td>Sales</td><td><span class="dg-badge dg-badge--warning">Invited</span></td><td>Dublin</td><td>€4,100</td><td><time datetime="2026-11-24">24 Nov 2026</time></td><td><button class="dg-table__action" type="button" aria-label="Actions for Liam Murphy" popovertarget="row-menu">⋯</button></td></tr>
+                    <tr><td><strong>Maya Patel</strong></td><td>Research</td><td><span class="dg-badge dg-badge--success">Active</span></td><td>Mumbai</td><td>€6,890</td><td><time datetime="2026-11-20">20 Nov 2026</time></td><td><button class="dg-table__action" type="button" aria-label="Actions for Maya Patel" popovertarget="row-menu">⋯</button></td></tr>
+                    <tr><td><strong>Jonas Weber</strong></td><td>Finance</td><td><span class="dg-badge dg-badge--success">Active</span></td><td>Berlin</td><td>€5,230</td><td><time datetime="2026-11-05">5 Nov 2026</time></td><td><button class="dg-table__action" type="button" aria-label="Actions for Jonas Weber" popovertarget="row-menu">⋯</button></td></tr>
+                    <tr><td><strong>Zoé Lambert</strong></td><td>Product design</td><td><span class="dg-badge dg-badge--success">Active</span></td><td>Brussels</td><td>€4,475</td><td><time datetime="2026-11-19">19 Nov 2026</time></td><td><button class="dg-table__action" type="button" aria-label="Actions for Zoé Lambert" popovertarget="row-menu">⋯</button></td></tr>
+                    <tr><td><strong>Hugo Nilsson</strong></td><td>Sales</td><td><span class="dg-badge dg-badge--danger">Left</span></td><td>Stockholm</td><td>€3,600</td><td><time datetime="2026-03-14">14 Mar 2026</time></td><td><button class="dg-table__action" type="button" aria-label="Actions for Hugo Nilsson" popovertarget="row-menu">⋯</button></td></tr>
+                    <tr><td><strong>Aïcha Diallo</strong></td><td>Support</td><td><span class="dg-badge dg-badge--success">Active</span></td><td>Dakar</td><td>€3,120</td><td><time datetime="2026-11-22">22 Nov 2026</time></td><td><button class="dg-table__action" type="button" aria-label="Actions for Aïcha Diallo" popovertarget="row-menu">⋯</button></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="dg dg-menu" popover role="menu" id="row-menu" data-align="end" aria-label="Row actions">
+              <button role="menuitem" type="button" data-toast="Profile opened"><i data-icon="user"></i>Profile</button>
+              <button role="menuitem" type="button" data-toast="Message sent"><i data-icon="mail"></i>Message</button>
+              <hr />
+              <button role="menuitem" type="button" data-danger data-toast="Removed"><i data-icon="trash"></i>Remove</button>
+            </div>
+            <p class="hint">Click a header to sort, tick rows (Shift for a range), search without accents.</p>
+          </div>
+
           <div class="spot">
             <h3>Toasts and sheets</h3>
             <div class="row-wrap">

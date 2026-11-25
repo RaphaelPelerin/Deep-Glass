@@ -1,6 +1,7 @@
 import { dropdown, ITEMS, ownerOf, select } from './dropdown';
 import { defineControl, demote, refresh } from './runtime';
 import { prefersReducedMotion } from './support';
+import { table } from './table';
 
 interface Box {
   x: number;
@@ -589,6 +590,7 @@ export function installControls(): void {
   defineControl('.dg-toolbar', hoverGroup('button, a, [role="button"]'));
   defineControl('.dg-menu', menu);
   defineControl('.dg-select', select);
+  defineControl('.dg-table', table);
   defineControl('.dg-switch', toggleSwitch);
   defineControl('.dg-slider', slider);
 }

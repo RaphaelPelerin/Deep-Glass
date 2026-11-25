@@ -1276,6 +1276,400 @@ dialog.dg-sheet::backdrop {
   }
 }
 
+/* ---------- table ---------- */
+
+.dg-table {
+  --dg-bezel: 26;
+  --dg-blur: 7;
+  --dg-cell: 14px 18px;
+  display: block;
+  border-radius: 28px;
+  font-size: 15px;
+}
+
+.dg-table__scroll {
+  position: relative;
+  overflow: auto hidden;
+  border-radius: inherit;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.35) transparent;
+}
+
+/* a height, and the rows scroll under the header */
+.dg-table--scroll > .dg-table__scroll {
+  max-height: var(--dg-table-height, 420px);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+
+.dg-table__scroll > .dg-droplet {
+  /* under the text, and no lens: a plain highlight, as wide as the table */
+  --dg-refraction: 0;
+  --dg-tint: rgb(255 255 255 / 0.1);
+  --dg-shadow: none;
+  z-index: 0;
+  border-radius: 0;
+}
+
+.dg-table__scroll > .dg-droplet::before {
+  display: none;
+}
+
+.dg-table table {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: start;
+  font-variant-numeric: tabular-nums;
+}
+
+.dg-table :is(th, td) {
+  padding: var(--dg-cell);
+  border-bottom: 1px solid var(--dg-tone-line);
+  text-align: start;
+  vertical-align: middle;
+}
+
+.dg-table tbody tr:last-child > *,
+.dg-table tbody tr:not([data-dg-out]):not(:has(~ tr:not([data-dg-out]))) > * {
+  border-bottom-color: transparent;
+}
+
+.dg-table [data-num] {
+  text-align: end;
+}
+
+.dg-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dg-table tr[data-dg-out] {
+  display: none;
+}
+
+.dg-table tr[data-selected] > * {
+  background-color: rgb(255 255 255 / 0.15);
+}
+
+.dg-table tr[data-selected] > :first-child {
+  box-shadow: inset 3px 0 var(--dg-table-mark, #fff);
+}
+
+.dg-table tr[data-selected] > :first-child:dir(rtl) {
+  box-shadow: inset -3px 0 var(--dg-table-mark, #fff);
+}
+
+.dg-table__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: -6px -10px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dg-table [data-num] > .dg-table__sort {
+  flex-direction: row-reverse;
+}
+
+.dg-table__sort:hover {
+  background: rgb(255 255 255 / 0.1);
+}
+
+.dg-table :is(button, input):focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--dg-accent) 80%, white);
+  outline-offset: 1px;
+}
+
+.dg-table__sort::after {
+  content: '';
+  box-sizing: border-box;
+  width: 7px;
+  height: 7px;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  rotate: 45deg;
+  translate: 0 -2px;
+  opacity: 0;
+  transition:
+    rotate 0.35s var(--dg-ease),
+    translate 0.35s var(--dg-ease),
+    opacity 0.2s;
+}
+
+.dg-table__sort:is(:hover, :focus-visible)::after {
+  opacity: 0.45;
+}
+
+[aria-sort='ascending'] > .dg-table__sort::after {
+  rotate: 225deg;
+  translate: 0 2px;
+  opacity: 1;
+}
+
+[aria-sort='descending'] > .dg-table__sort::after {
+  opacity: 1;
+}
+
+.dg-table__check {
+  width: 1px;
+  padding-inline-end: 0 !important;
+}
+
+.dg-table__empty {
+  margin: 0;
+  padding: 36px 18px;
+  text-align: center;
+  opacity: 0.75;
+}
+
+.dg-table__foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px 10px 18px;
+  border-top: 1px solid var(--dg-tone-line);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dg-table__picked {
+  flex: 1;
+  font-weight: 600;
+}
+
+.dg-table__range {
+  margin-inline-end: 6px;
+  opacity: 0.8;
+}
+
+.dg-table :is([hidden]) {
+  display: none;
+}
+
+/* plain round buttons, for pages and the actions of a row (no glass on glass) */
+:is(.dg-table__turn, .dg-table__action) {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.1);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dg-table__action {
+  background: none;
+}
+
+:is(.dg-table__turn, .dg-table__action):hover:enabled {
+  background: rgb(255 255 255 / 0.22);
+}
+
+.dg-table__turn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.dg-table__turn::before {
+  content: '';
+  box-sizing: border-box;
+  width: 9px;
+  height: 9px;
+  border: solid currentColor;
+  border-width: 0 0 2px 2px;
+  rotate: 45deg;
+  translate: 2px 0;
+}
+
+.dg-table__turn--next::before {
+  rotate: 225deg;
+  translate: -2px 0;
+}
+
+.dg-table__turn:dir(rtl) {
+  scale: -1 1;
+}
+
+/* a checkbox */
+.dg-check {
+  appearance: none;
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  border: 1.5px solid rgb(255 255 255 / 0.55);
+  border-radius: 7px;
+  background: rgb(255 255 255 / 0.08);
+  vertical-align: middle;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+
+.dg-check::before {
+  content: '';
+  box-sizing: border-box;
+  width: 6px;
+  height: 11px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  rotate: 45deg;
+  translate: 0 -1px;
+  scale: 0;
+  transition: scale 0.3s var(--dg-ease);
+}
+
+.dg-check:is(:checked, :indeterminate) {
+  border-color: transparent;
+  background: var(--dg-accent);
+}
+
+.dg-check:checked::before {
+  scale: 1;
+}
+
+.dg-check:indeterminate::before {
+  width: 10px;
+  height: 2px;
+  border-width: 0 0 2px;
+  rotate: 0deg;
+  translate: 0;
+  scale: 1;
+}
+
+.dg-check:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* a status */
+.dg-badge {
+  --dg-badge: 255 255 255;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: rgb(var(--dg-badge) / 0.18);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.dg-badge::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgb(var(--dg-badge));
+}
+
+.dg-badge--success {
+  --dg-badge: 74 222 128;
+}
+.dg-badge--warning {
+  --dg-badge: 251 191 36;
+}
+.dg-badge--danger {
+  --dg-badge: 251 113 133;
+}
+
+/* narrow: each row becomes a block, each cell says which column it is */
+.dg-table--stack {
+  container-type: inline-size;
+}
+
+@container (max-width: 560px) {
+  .dg-table--stack thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .dg-table--stack :is(table, tbody) {
+    display: block;
+  }
+  .dg-table--stack tr:not([data-dg-out]) {
+    position: relative;
+    display: block;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--dg-tone-line);
+  }
+  .dg-table--stack tr[data-selected] {
+    background-color: rgb(255 255 255 / 0.15);
+    box-shadow: inset 3px 0 var(--dg-table-mark, #fff);
+  }
+  .dg-table--stack tr[data-selected] > :is(*, :first-child, :first-child:dir(rtl)) {
+    background: none;
+    box-shadow: none;
+  }
+  .dg-table--stack td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 5px 0;
+    border: 0;
+    text-align: end;
+  }
+  .dg-table--stack td[data-label]::before {
+    content: attr(data-label);
+    font-size: 13px;
+    opacity: 0.65;
+  }
+  /* the checkbox and the actions sit on the line of the first cell, the title of the block */
+  .dg-table--stack td.dg-table__check {
+    position: absolute;
+    inset-inline-start: 18px;
+    width: auto;
+    height: 34px;
+    padding: 0;
+  }
+  .dg-table--stack :is(td.dg-table__check + td, td:first-child:not(.dg-table__check)) {
+    justify-content: flex-start;
+    min-height: 34px;
+    padding-block: 0;
+    font-size: 16px;
+  }
+  .dg-table--stack td.dg-table__check + td {
+    padding-inline-start: 32px;
+  }
+  .dg-table--stack :is(td.dg-table__check + td, td:first-child, td:has(> .dg-table__action))::before {
+    display: none;
+  }
+  .dg-table--stack td:has(> .dg-table__action) {
+    position: absolute;
+    top: 12px;
+    inset-inline-end: 12px;
+    padding: 0;
+  }
+}
+
 /* ---------- preferences ---------- */
 
 @media (prefers-reduced-transparency: reduce) {

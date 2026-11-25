@@ -495,6 +495,25 @@ a {
   gap: 44px 40px;
 }
 
+.spot--wide {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.table-head {
+  max-width: 340px;
+  margin-bottom: 14px;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .spot h3 {
   margin: 0 0 16px;
   color: var(--fg-2);

@@ -92,6 +92,17 @@ Or with a `<script>` tag, which starts on its own:
 <!-- a select: the native one keeps the value -->
 <div class="dg dg-select"><select aria-label="City"><option>Paris</option><option>Tokyo</option></select></div>
 
+<!-- a table: sortable headers, a checkbox per row, pages, a search field anywhere on the page -->
+<input type="search" data-dg-search="people" />
+<div class="dg dg-table dg-table--stack" id="people" data-select data-page-size="10">
+  <div class="dg-table__scroll">
+    <table>
+      <thead><tr><th data-sort>Name</th><th data-sort="number">Budget</th><th data-sort="date">Joined</th></tr></thead>
+      <tbody><tr><td>Nova</td><td>€4,820</td><td><time datetime="2026-11-18">18 Nov</time></td></tr></tbody>
+    </table>
+  </div>
+</div>
+
 <!-- a switch and a slider: their thumbs turn into lenses while you hold them -->
 <label class="dg-switch"><input type="checkbox" /> Wi-Fi</label>
 <div class="dg-slider"><input type="range" aria-label="Volume" /></div>
@@ -103,6 +114,21 @@ Or with a `<script>` tag, which starts on its own:
 Dropdowns use the browser's popovers: they close on Escape or a click outside, and lie above everything. The script places them by their button (`data-align="start"`, `center` or `end`; above it when there is no room), handles the keyboard, and ticks `menuitemcheckbox` and `menuitemradio` items, with a `dg:change` event (`detail: { value, checked }`). `data-dg-keep` on an item or the menu keeps it open after a click. Wrap a long list of items in `<div class="dg-menu__scroll">`. A row with its own `popovertarget` opens a submenu, as deep as you like: on hover, on click or with the right arrow, beside its parent (over it when the screen is too narrow). Picking an item closes the whole chain.
 
 A `dg-select` needs no code of its own: its `<select>` fires `input` and `change` as usual, and stays native where popovers are missing.
+
+A `dg-table` enhances the `<table>` you write, every part is optional:
+
+| On | Attribute | |
+| --- | --- | --- |
+| `th` | `data-sort`, `="number"`, `="date"` | Sorts by this column: up, down, then the original order. `aria-sort="ascending"` sorts from the start |
+| `td` | `data-value` | What to sort by, when it isn't what the cell shows |
+| `.dg-table` | `data-select` | A checkbox per row (Shift for a range); selected rows have `data-selected` |
+| `.dg-table` | `data-page-size` | Rows per page |
+| any `input` | `data-dg-search="id"` | Filters the rows of that table, whatever the case and the accents |
+| `.dg-table` | `dg-table--stack` | Under 560px wide, each row becomes a block |
+| `.dg-table` | `dg-table--scroll` | The rows scroll under the header (`--dg-table-height`) |
+| `.dg-table` | `data-label-empty`, `-selected`, `-all`, `-row`, `-prev`, `-next` | Its texts, to translate |
+
+It fires `dg:sort` (`{ column, direction }`; `preventDefault()` to sort the data yourself, with a framework or a server), `dg:select` (`{ rows }`) and `dg:page` (`{ page }`, from 0). Rows added, removed or edited later are picked up. `dg-badge` (`--success`, `--warning`, `--danger`), `dg-check` and `dg-table__action` are there for its cells.
 
 Segmented controls and tab bars fire a `dg:change` event (`detail: { index, value }`, `value` from `data-value` or the label). Switches and sliders are real inputs: forms, `change` events and the keyboard work as usual.
 

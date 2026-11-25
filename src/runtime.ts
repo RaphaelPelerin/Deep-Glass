@@ -212,8 +212,8 @@ function glareIn(el: HTMLElement): HTMLElement | null {
 }
 
 function drawGlare(el: HTMLElement, l: Light) {
-  // cards: no glare over what they hold
-  if (el.matches('.dg-card')) return;
+  // cards and tables: no glare over what they hold
+  if (el.matches('.dg-card, .dg-table, .dg-table .dg-droplet')) return;
   const on = l.near > 0 || pressed?.el === el;
   const spot = on ? glareIn(el) : glares.get(el);
   if (!spot) return;

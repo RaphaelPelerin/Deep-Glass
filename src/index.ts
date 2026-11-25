@@ -25,7 +25,7 @@ export interface DeepGlassInstance {
 
 /**
  * Turns every `.dg` element into deep glass, and brings the components to life (switches,
- * sliders, segmented controls, tab bars, toolbars, menus). Elements added later are picked up.
+ * sliders, segmented controls, tab bars, toolbars, menus, selects, tables). Elements added later are picked up.
  *
  * ```js
  * import { deepGlass } from 'deep-glass';

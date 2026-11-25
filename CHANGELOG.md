@@ -11,6 +11,7 @@
 - Fixed: with no refraction (Safari, Firefox, or turned off), the drop of a segmented control or tab bar blurred the label it marks.
 - Fixed: glass inside glass with no lens of its own took the lens of its parent.
 - Cards stay calm: no glare over them, and tiles have a plain tint and a thin, fixed rim instead of light filling them.
+- **Tables**: `dg-table` around a native `<table>`, with sorting, search, pages, selection, a fixed header and a phone layout; `dg-badge` and `dg-check`.
 - The light has inertia: a rim no longer flips, nor a glare jumps, when the pointer leaves a button on one side and comes back on the other.
 
 ## 0.1.0 (2026-11-17)
