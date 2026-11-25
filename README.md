@@ -3,7 +3,7 @@
 **Deep glass for the web.** UI components that refract what is behind them through a curved rim, split it into colors at the edges, catch the light where your pointer is, and stretch like a drop when you press them.
 
 [![npm](https://img.shields.io/npm/v/deep-glass?color=8ab4ff)](https://www.npmjs.com/package/deep-glass)
-[![gzip](https://img.shields.io/badge/gzip-8%20kB%20js%20%2B%204%20kB%20css-8ab4ff)](#size)
+[![gzip](https://img.shields.io/badge/gzip-16%20kB%20js%20%2B%206%20kB%20css-8ab4ff)](#size)
 [![license](https://img.shields.io/badge/license-MIT-8ab4ff)](LICENSE)
 
 **[Live demo →](https://deep-glass.vercel.app)** Drag the loupe, press the buttons, switch to dark glass.
@@ -226,7 +226,7 @@ On the demo page, 28 refracting panes scroll at about 80% of the frame rate of t
 
 ## Size
 
-About 8 kB of JavaScript and 4 kB of CSS, gzipped. No dependencies.
+About 16 kB of JavaScript and 6 kB of CSS, gzipped. No dependencies.
 
 ## Pairs well with
 
