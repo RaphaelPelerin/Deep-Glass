@@ -14,6 +14,8 @@ interface Pane {
   key: string | null;
   w: number;
   h: number;
+  /** the size its filter was made for */
+  made?: { w: number; h: number };
 }
 
 /** a component's behavior: set up on an element, returns its cleanup */
@@ -67,7 +69,7 @@ function updatePane(pane: Pane) {
       {
         width: w,
         height: h,
-        radius: radiusOf(cs.borderTopLeftRadius, w, h),
+        radius: radiusOf(el.style.getPropertyValue('--dg-corner') || cs.borderTopLeftRadius, w, h),
         bezel,
         thickness: num(cs, '--dg-thickness', bezel * 0.5) * strength,
         ior: num(cs, '--dg-ior', 1.5),
@@ -82,8 +84,11 @@ function updatePane(pane: Pane) {
       () => queue(pane),
     );
     // its lens is being made: it keeps the one it has meanwhile, and comes back when it's ready
-    if (!next) return;
+    // (a drop that grew would show where the old lens ends: it goes without for a frame or two)
+    const grew = pane.made && (w > pane.made.w + 1 || h > pane.made.h + 1);
+    if (!next && !(grew && el.matches('.dg-droplet'))) return;
   }
+  pane.made = next ? { w, h } : undefined;
   if (pane.key) release(pane.key);
   pane.key = next?.key ?? null;
   if (next) {

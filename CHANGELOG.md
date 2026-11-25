@@ -7,6 +7,7 @@
 - **Select**: `dg-select` around a native `<select>`, with groups and long lists that scroll inside the glass.
 - **Faster under the pointer**: about 30% less time per frame when moving over buttons. The glare is moved by the GPU instead of painted, the bevel is fixed, and the light reaches the four nearest panes. `--dg-lx`, `--dg-ly`, `--dg-mx`, `--dg-my` and `--dg-near` are gone (`--dg-glare` sets the strength of the glare).
 - **Adaptive quality** (`adaptive`, on by default): lighter effects on devices that can't keep up, `glass.quality` tells the step.
+- Fixed: a drop sliding between items of different widths turned oval, then snapped back to its shape; and jumped when the pointer left its toolbar for a moment.
 - Fixed: with no refraction (Safari, Firefox, or turned off), the drop of a segmented control or tab bar blurred the label it marks.
 - Fixed: glass inside glass with no lens of its own took the lens of its parent.
 - Cards stay calm: no glare over them, and tiles have a plain tint and a thin, fixed rim instead of light filling them.

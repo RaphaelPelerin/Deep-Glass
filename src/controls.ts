@@ -88,8 +88,11 @@ export class Droplet {
   private readonly pw = new Spring(0);
   private readonly ph = new Spring(0);
   private target: Box | null = null;
-  /** layout size: scaling covers the rest while it moves, the size is set once it rests */
+  /** layout size: the one it goes to (its lens is made for it on the way), scaling covers the rest */
   private base = { w: 0, h: 0 };
+  /** its corners, from the stylesheet, px */
+  private corner = -1;
+  private hiddenAt = -Infinity;
   private frame = 0;
   private last = 0;
   private lifted = false;
@@ -107,7 +110,10 @@ export class Droplet {
   }
 
   to(box: Box | null, immediate = false): void {
-    const appearing = !this.target;
+    const now = performance.now();
+    // gone for a moment only (it is still fading): it slides from where it was
+    const appearing = !this.target && now - this.hiddenAt > 220;
+    if (this.target && !box) this.hiddenAt = now;
     this.target = box;
     this.el.toggleAttribute('data-hidden', !box);
     if (!box) return;
@@ -119,6 +125,8 @@ export class Droplet {
       this.rest();
       return;
     }
+    this.size(box.w, box.h);
+    this.render();
     this.run();
   }
 
@@ -173,16 +181,19 @@ export class Droplet {
     this.frame = requestAnimationFrame(this.tick);
   };
 
-  /** at rest: the real size, no scaling (the lens map is made for it) */
+  /** at rest: the real size, no scaling */
   private rest() {
-    const w = Math.round(this.pw.x);
-    const h = Math.round(this.ph.x);
-    if (w !== this.base.w || h !== this.base.h) {
-      this.base = { w, h };
-      this.el.style.width = `${w}px`;
-      this.el.style.height = `${h}px`;
-    }
+    this.size(this.pw.x, this.ph.x);
     this.render();
+  }
+
+  private size(width: number, height: number) {
+    const w = Math.round(width);
+    const h = Math.round(height);
+    if (w === this.base.w && h === this.base.h) return;
+    this.base = { w, h };
+    this.el.style.width = `${w}px`;
+    this.el.style.height = `${h}px`;
   }
 
   private render() {
@@ -201,10 +212,27 @@ export class Droplet {
       ky *= 1 + stretch;
       kx *= 1 - stretch * 0.4;
     }
+    this.round(bw, bh, kx, ky);
     const lift = this.lifted ? 1.12 : this.pressed ? 0.97 : 1;
     const cx = this.px.x + this.pw.x / 2;
     const cy = this.py.x + this.ph.x / 2;
     this.el.style.transform = `translate(${(cx - bw / 2).toFixed(2)}px, ${(cy - bh / 2).toFixed(2)}px) scale(${(kx * lift).toFixed(4)}, ${(ky * lift).toFixed(4)})`;
+  }
+
+  /** scaled more one way than the other, round ends would turn oval: the corners make up for it */
+  private round(bw: number, bh: number, kx: number, ky: number) {
+    const style = this.el.style;
+    if (this.corner < 0) this.corner = parseFloat(getComputedStyle(this.el).borderTopLeftRadius) || 0;
+    if (Math.abs(kx - ky) < 0.004) {
+      if (!style.borderRadius) return;
+      style.borderRadius = '';
+      style.removeProperty('--dg-corner');
+      return;
+    }
+    const r = Math.min(this.corner, (bw * kx) / 2, (bh * ky) / 2);
+    style.borderRadius = `${(r / kx).toFixed(2)}px / ${(r / ky).toFixed(2)}px`;
+    // its lens is made for the shape it has at rest
+    style.setProperty('--dg-corner', `${this.corner}px`);
   }
 }
 
