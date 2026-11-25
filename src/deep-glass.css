@@ -177,7 +177,7 @@
   );
   mix-blend-mode: plus-lighter;
   opacity: calc(var(--dg-near) * 0.9 * var(--dg-tone-glare));
-  transition: opacity 0.4s;
+  transition: opacity 0.15s;
   pointer-events: none;
 }
 

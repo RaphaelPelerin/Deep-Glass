@@ -185,45 +185,170 @@ function direction(lx: number, ly: number): Record<string, string> {
   };
 }
 
-function lightUp() {
-  lightFrame = 0;
+/** where the light of a pane is, and where it goes: it has inertia, it never jumps */
+interface Light {
+  /** direction of the rim light */
+  angle: number;
+  toAngle: number;
+  /** strength of the glare */
+  near: number;
+  toNear: number;
+  /** the glare */
+  x: number;
+  y: number;
+  toX: number;
+  toY: number;
+  /** when the glare went out */
+  outAt: number;
+}
+
+/** the light at rest, as in the stylesheet: from the top left */
+const REST = Math.atan2(-0.8, -0.6);
+/** how long the light takes to turn, the glare to move, and to brighten or fade, s */
+const TURN = 0.12;
+const SLIDE = 0.045;
+const FADE = 0.09;
+/** a glare out for this long starts again where the pointer is (its fade has ended by then), ms */
+const OUT = 250;
+
+const lights = new WeakMap<HTMLElement, Light>();
+/** panes whose light is on its way */
+const moving = new Set<HTMLElement>();
+/** the pointer, the scroll or the panes changed: where each light goes is to be worked out again */
+let retarget = true;
+let lightAt = 0;
+let lightTick = 0;
+
+/** the shortest way from an angle to another */
+const turn = (from: number, to: number) => {
+  const d = (to - from) % (2 * Math.PI);
+  return d > Math.PI ? d - 2 * Math.PI : d < -Math.PI ? d + 2 * Math.PI : d;
+};
+
+function lightOf(el: HTMLElement): Light {
+  let l = lights.get(el);
+  if (!l) {
+    l = { angle: REST, toAngle: REST, near: 0, toNear: 0, x: 0, y: 0, toX: 0, toY: 0, outAt: -OUT };
+    lights.set(el, l);
+  }
+  return l;
+}
+
+/** where each light goes, for the panes near the pointer and the ones it just left */
+function aim(now: number) {
   const els = [...onScreen];
   const boxes = els.map((el) => el.getBoundingClientRect());
   for (let i = 0; i < els.length; i++) {
     const el = els[i];
     const r = boxes[i];
     if (tilt && !pointer) {
-      set(el, direction(tilt.x, tilt.y));
+      const l = lightOf(el);
+      l.toAngle = Math.atan2(tilt.y, tilt.x);
+      l.toNear = 0;
+      moving.add(el);
       continue;
     }
-    const was = shown.get(el)?.['--dg-near'];
-    if (!pointer) {
-      if (was && was !== '0') set(el, { '--dg-near': '0' });
+    let near = 0;
+    if (pointer) {
+      // 1 over the pane, fading out within a pane size around it
+      const gap = Math.hypot(
+        Math.max(r.left - pointer.x, 0, pointer.x - r.right),
+        Math.max(r.top - pointer.y, 0, pointer.y - r.bottom),
+      );
+      near = Math.max(0, 1 - gap / Math.max(120, Math.min(r.width, r.height)));
+    }
+    if (near <= 0 || !pointer) {
+      // out of reach: the glare fades where it is, the rim turns back to its light at rest
+      const l = lights.get(el);
+      if (!l || (l.toNear === 0 && l.toAngle === REST)) continue;
+      l.toNear = 0;
+      l.toAngle = REST;
+      moving.add(el);
       continue;
     }
-    // 1 over the pane, fading out within a pane size around it
-    const gap = Math.hypot(
-      Math.max(r.left - pointer.x, 0, pointer.x - r.right),
-      Math.max(r.top - pointer.y, 0, pointer.y - r.bottom),
-    );
-    const near = Math.max(0, 1 - gap / Math.max(120, Math.min(r.width, r.height)));
-    if (near <= 0) {
-      // out of reach: keeps the light it had, the glare fades once
-      if (was && was !== '0') set(el, { '--dg-near': '0' });
-      continue;
+    const l = lightOf(el);
+    // the rim turns towards the pointer as it comes, all the way well before it touches
+    const pull = Math.min(1, near * 1.6);
+    const facing = Math.atan2(pointer.y - (r.top + r.height / 2), pointer.x - (r.left + r.width / 2));
+    l.toAngle = REST + turn(REST, facing) * pull * pull * (3 - 2 * pull);
+    l.toNear = near;
+    if (pressed?.el !== el) {
+      l.toX = pointer.x - r.left;
+      l.toY = pointer.y - r.top;
+      // the glare was out: it comes back here, it doesn't cross the pane from where it was
+      if (l.near === 0 && now - l.outAt > OUT) {
+        l.x = l.toX;
+        l.y = l.toY;
+      }
     }
-    set(el, {
-      ...direction(pointer.x - (r.left + r.width / 2), pointer.y - (r.top + r.height / 2)),
-      '--dg-near': (Math.round(near * 20) / 20).toString(),
-      '--dg-mx': `${Math.round(pointer.x - r.left)}px`,
-      '--dg-my': `${Math.round(pointer.y - r.top)}px`,
-    });
+    moving.add(el);
   }
 }
 
+function lightUp(now: number) {
+  lightFrame = 0;
+  const dt = Math.min(0.05, Math.max(0.001, (now - lightAt) / 1000));
+  lightAt = now;
+  if (retarget) {
+    retarget = false;
+    aim(now);
+  }
+  const still = prefersReducedMotion();
+  const ease = (time: number) => (still ? 1 : 1 - Math.exp(-dt / time));
+  const turning = ease(TURN);
+  const sliding = ease(SLIDE);
+  const fading = ease(FADE);
+  lightTick++;
+  let nth = 0;
+  for (const el of moving) {
+    const l = lightOf(el);
+    const da = turn(l.angle, l.toAngle);
+    const dn = l.toNear - l.near;
+    const dx = l.toX - l.x;
+    const dy = l.toY - l.y;
+    const turned = Math.abs(da) < 0.02;
+    const faded = Math.abs(dn) < 0.02;
+    const slid = l.toNear === 0 || Math.hypot(dx, dy) < 0.5;
+    const before = l.near;
+    l.angle = turned ? l.toAngle : l.angle + da * turning;
+    l.near = faded ? l.toNear : l.near + dn * fading;
+    if (l.near === 0 && before > 0) l.outAt = now;
+    if (l.toNear > 0) {
+      l.x = slid ? l.toX : l.x + dx * sliding;
+      l.y = slid ? l.toY : l.y + dy * sliding;
+    }
+    // each write repaints a lens: the panes by the pointer on every frame, the ones further away,
+    // where the light is faint, one frame in three
+    if (Math.max(l.near, l.toNear) < 0.7 && pressed?.el !== el && (lightTick + nth++) % 3) continue;
+    const values = direction(Math.cos(l.angle), Math.sin(l.angle));
+    values['--dg-near'] = (Math.round(l.near * 20) / 20).toString();
+    // held: the glare is under the finger (see pull)
+    if (pressed?.el !== el && l.toNear > 0) {
+      values['--dg-mx'] = `${Math.round(l.x)}px`;
+      values['--dg-my'] = `${Math.round(l.y)}px`;
+    }
+    set(el, values);
+    if (turned && faded && slid) moving.delete(el);
+  }
+  if (moving.size || retarget) lightFrame ||= requestAnimationFrame(lightUp);
+}
+
 const relight = () => {
-  if (options.light) lightFrame ||= requestAnimationFrame(lightUp);
+  if (!options.light) return;
+  retarget = true;
+  if (lightFrame) return;
+  // idle until now: the time since the last frame is not the light's
+  if (!moving.size) lightAt = performance.now() - 16;
+  lightFrame = requestAnimationFrame(lightUp);
 };
+
+/** the glare is put here at once (a press) */
+function glareAt(el: HTMLElement, x: number, y: number): Record<string, string> {
+  const l = lightOf(el);
+  l.x = l.toX = x;
+  l.y = l.toY = y;
+  return { '--dg-mx': `${Math.round(x)}px`, '--dg-my': `${Math.round(y)}px` };
+}
 
 const onPointerMove = (e: PointerEvent) => {
   if (e.pointerType === 'touch' && !pressed) return;
@@ -249,6 +374,7 @@ const visibility = IntersectionObserverLike((entries) => {
     if (!e.isIntersecting) {
       // a lens already made stays: off screen it costs nothing, and coming back costs nothing either
       onScreen.delete(el);
+      moving.delete(el);
       continue;
     }
     onScreen.add(el);
@@ -281,7 +407,7 @@ function onPointerDown(e: PointerEvent) {
   const r = el.getBoundingClientRect();
   pressed = { el, id: e.pointerId, left: r.left, top: r.top, w: r.width, h: r.height, x: e.clientX, y: e.clientY, frame: 0 };
   el.dataset.pressed = '';
-  set(el, { '--dg-mx': `${Math.round(e.clientX - r.left)}px`, '--dg-my': `${Math.round(e.clientY - r.top)}px` });
+  set(el, glareAt(el, e.clientX - r.left, e.clientY - r.top));
   addEventListener('pointermove', onPressMove, { passive: true });
   addEventListener('pointerup', onPressEnd);
   addEventListener('pointercancel', onPressEnd);
@@ -302,8 +428,7 @@ function pull() {
     '--dg-pull-y': `${py.toFixed(1)}px`,
     '--dg-sx': sx.toFixed(3),
     '--dg-sy': sy.toFixed(3),
-    '--dg-mx': `${Math.round(x - left - px)}px`,
-    '--dg-my': `${Math.round(y - top - py)}px`,
+    ...glareAt(el, x - left - px, y - top - py),
   });
 }
 
@@ -372,6 +497,7 @@ export function demote(el: HTMLElement): void {
   if (lit.delete(el)) {
     visibility.unobserve(el);
     onScreen.delete(el);
+    moving.delete(el);
   }
   el.style.removeProperty('--dg-filter');
   delete el.dataset.dgRefracts;
@@ -389,6 +515,7 @@ function detach(el: HTMLElement) {
   if (lit.delete(el)) {
     visibility.unobserve(el);
     onScreen.delete(el);
+    moving.delete(el);
   }
   const cleanup = cleanups.get(el);
   if (cleanup) {
