@@ -765,6 +765,24 @@ button.dg-tile {
   opacity: 0;
 }
 
+/* opens a submenu */
+.dg-menu [popovertarget]::after {
+  content: '';
+  box-sizing: border-box;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  border: solid currentColor;
+  border-width: 2px 2px 0 0;
+  rotate: 45deg;
+  opacity: 0.7;
+}
+
+.dg-menu [popovertarget]:dir(rtl)::after {
+  rotate: -135deg;
+}
+
 .dg-menu :is([aria-checked='true'], [aria-selected='true'])::after {
   opacity: 1;
 }
@@ -838,11 +856,11 @@ button.dg-tile {
   pointer-events: none;
 }
 
-.dg-menu[popover] > :not(.dg-droplet) {
+.dg-menu[popover] > :not(.dg-droplet, [popover]) {
   transition: opacity 0.2s;
 }
 
-.dg-menu[popover]:not(:popover-open) > * {
+.dg-menu[popover]:not(:popover-open) > :not([popover]) {
   opacity: 0;
   transition-duration: 0.14s;
 }
@@ -851,7 +869,7 @@ button.dg-tile {
   .dg-menu[popover]:popover-open {
     scale: 0.8;
   }
-  .dg-menu[popover]:popover-open > :not(.dg-droplet) {
+  .dg-menu[popover]:popover-open > :not(.dg-droplet, [popover]) {
     opacity: 0;
   }
 }

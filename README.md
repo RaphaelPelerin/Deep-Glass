@@ -100,7 +100,9 @@ Or with a `<script>` tag, which starts on its own:
 <dialog class="dg dg-sheet">…</dialog>
 ```
 
-Dropdowns use the browser's popovers: they close on Escape or a click outside, and lie above everything. The script places them by their button (`data-align="start"`, `center` or `end`; above it when there is no room), handles the keyboard, and ticks `menuitemcheckbox` and `menuitemradio` items, with a `dg:change` event (`detail: { value, checked }`). `data-dg-keep` on an item or the menu keeps it open after a click. Wrap a long list of items in `<div class="dg-menu__scroll">`. A `dg-select` needs no code of its own: its `<select>` fires `input` and `change` as usual, and stays native where popovers are missing.
+Dropdowns use the browser's popovers: they close on Escape or a click outside, and lie above everything. The script places them by their button (`data-align="start"`, `center` or `end`; above it when there is no room), handles the keyboard, and ticks `menuitemcheckbox` and `menuitemradio` items, with a `dg:change` event (`detail: { value, checked }`). `data-dg-keep` on an item or the menu keeps it open after a click. Wrap a long list of items in `<div class="dg-menu__scroll">`. A row with its own `popovertarget` opens a submenu, as deep as you like: on hover, on click or with the right arrow, beside its parent (over it when the screen is too narrow). Picking an item closes the whole chain.
+
+A `dg-select` needs no code of its own: its `<select>` fires `input` and `change` as usual, and stays native where popovers are missing.
 
 Segmented controls and tab bars fire a `dg:change` event (`detail: { index, value }`, `value` from `data-value` or the label). Switches and sliders are real inputs: forms, `change` events and the keyboard work as usual.
 

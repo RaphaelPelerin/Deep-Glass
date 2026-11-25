@@ -213,10 +213,20 @@
             <div class="dg dg-menu" popover role="menu" id="dd-actions" aria-label="Actions">
               <button role="menuitem" type="button" data-toast="Renamed"><i data-icon="edit"></i>Rename<kbd>F2</kbd></button>
               <button role="menuitem" type="button" data-toast="Duplicated"><i data-icon="copy"></i>Duplicate<kbd>Ctrl D</kbd></button>
-              <button role="menuitem" type="button" data-toast="Shared"><i data-icon="share"></i>Share</button>
+              <button role="menuitem" type="button" popovertarget="dd-share"><i data-icon="share"></i>Share</button>
               <button role="menuitem" type="button" disabled><i data-icon="mail"></i>Send by mail</button>
               <hr />
               <button role="menuitem" type="button" data-danger data-toast="Deleted"><i data-icon="trash"></i>Delete</button>
+            </div>
+            <div class="dg dg-menu" popover role="menu" id="dd-share" aria-label="Share">
+              <button role="menuitem" type="button" data-toast="Link copied"><i data-icon="copy"></i>Copy link</button>
+              <button role="menuitem" type="button" data-toast="Sent"><i data-icon="send"></i>Message</button>
+              <button role="menuitem" type="button" popovertarget="dd-export"><i data-icon="arrow"></i>Export as</button>
+            </div>
+            <div class="dg dg-menu" popover role="menu" id="dd-export" aria-label="Export as">
+              <button role="menuitem" type="button" data-toast="Exported as PNG"><i data-icon="photo"></i>PNG image</button>
+              <button role="menuitem" type="button" data-toast="Exported as PDF"><i data-icon="book"></i>PDF document</button>
+              <button role="menuitem" type="button" data-toast="Exported as a web page"><i data-icon="globe"></i>Web page</button>
             </div>
             <div class="dg dg-menu" popover role="menu" id="dd-view" aria-label="View">
               <div class="dg-menu__label">Show</div>
@@ -233,7 +243,7 @@
               <button role="menuitem" type="button" data-toast="Notifications"><i data-icon="bell"></i>Notifications</button>
               <button role="menuitem" type="button" data-toast="Settings"><i data-icon="sliders"></i>Settings</button>
             </div>
-            <p class="hint">Arrow keys, Home and End work, or type the start of a label.</p>
+            <p class="hint">Share opens submenus. Arrow keys work, or type the start of a label.</p>
           </div>
 
           <div class="spot">

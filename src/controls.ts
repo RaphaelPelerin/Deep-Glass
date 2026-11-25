@@ -1,4 +1,4 @@
-import { dropdown, ITEMS, select } from './dropdown';
+import { dropdown, ITEMS, ownerOf, select } from './dropdown';
 import { defineControl, demote, refresh } from './runtime';
 import { prefersReducedMotion } from './support';
 
@@ -355,7 +355,7 @@ function hoverGroup(itemSelector: string) {
     const drop = new Droplet(root);
     const itemOf = (t: EventTarget | null) => {
       const item = (t as Element | null)?.closest?.<HTMLElement>(itemSelector);
-      return item && root.contains(item) && !item.matches(':disabled, [aria-disabled="true"]') ? item : null;
+      return item && ownerOf(item) === root && !item.matches(':disabled, [aria-disabled="true"]') ? item : null;
     };
     let current: HTMLElement | null = null;
     const show = (e: Event) => {
@@ -364,9 +364,21 @@ function hoverGroup(itemSelector: string) {
       current = item;
       drop.to(boxOf(item, root));
     };
-    const hide = () => {
+    const clear = () => {
       current = null;
       drop.to(null);
+    };
+    // the row of an open submenu keeps the drop
+    const hide = () => {
+      const rows = root.querySelectorAll<HTMLElement>('[popovertarget][aria-expanded="true"]');
+      const held = [...rows].find((row) => ownerOf(row) === root && row.matches('.dg-menu *'));
+      if (!held) return clear();
+      current = held;
+      drop.to(boxOf(held, root));
+    };
+    const collapse = (e: Event) => {
+      if (!current || e.target !== current || current.matches(':hover') || document.activeElement === current) return;
+      clear();
     };
     // a list that scrolls: the drop stays on its item, until it scrolls out of sight
     const scroll = () => {
@@ -375,7 +387,7 @@ function hoverGroup(itemSelector: string) {
       drop.to(box.h > 4 ? box : null, true);
     };
     const toggled = (e: Event) => {
-      if (e.target === root && (e as ToggleEvent).newState === 'closed') hide();
+      if (e.target === root && (e as ToggleEvent).newState === 'closed') clear();
     };
     // a press, not a lift: the drop stays inside its toolbar or menu
     const down = (e: PointerEvent) => itemOf(e.target) && drop.press(true);
@@ -387,6 +399,7 @@ function hoverGroup(itemSelector: string) {
     root.addEventListener('pointerleave', hide);
     root.addEventListener('scroll', scroll, true);
     root.addEventListener('beforetoggle', toggled);
+    root.addEventListener('dg:collapse', collapse, true);
     root.addEventListener('focusin', show);
     root.addEventListener('focusout', blur);
     root.addEventListener('pointerdown', down);
@@ -397,6 +410,7 @@ function hoverGroup(itemSelector: string) {
       root.removeEventListener('pointerleave', hide);
       root.removeEventListener('scroll', scroll, true);
       root.removeEventListener('beforetoggle', toggled);
+      root.removeEventListener('dg:collapse', collapse, true);
       root.removeEventListener('focusin', show);
       root.removeEventListener('focusout', blur);
       root.removeEventListener('pointerdown', down);
